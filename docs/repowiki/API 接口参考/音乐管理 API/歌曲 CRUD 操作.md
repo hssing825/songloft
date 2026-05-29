@@ -37,7 +37,7 @@
 10. [附录](#附录)
 
 ## 简介
-本文档面向 MiMusic 的"歌曲 CRUD 操作"接口，系统性地梳理了以下能力：
+本文档面向 Songloft 的"歌曲 CRUD 操作"接口，系统性地梳理了以下能力：
 - 获取歌曲列表（支持按类型过滤、关键词搜索、分页）
 - 获取单个歌曲详情
 - 创建歌曲（本地、网络、电台）
@@ -164,7 +164,7 @@ Handler-->>Client : 200 + {songs,total,limit,offset}
 - [constant.go:3-14](file://internal/models/constant.go#L3-L14)
 
 ### cache_hash 字段详解
-**新增** cache_hash 是 MiMusic 的核心去重机制，具有以下特性：
+**新增** cache_hash 是 Songloft 的核心去重机制，具有以下特性：
 
 - **唯一性约束**：数据库层面通过唯一索引确保每个 cache_hash 只能对应一条歌曲记录
 - **去重机制**：网络歌曲导入时使用 cache_hash 进行去重判断，避免重复导入相同内容
@@ -413,7 +413,7 @@ D --> SQLITE["database/sqlite.go"]
 - [music_test.go:309-347](file://internal/handlers/music_test.go#L309-L347)
 
 ## 结论
-MiMusic 的歌曲 CRUD 接口设计清晰，职责分离明确，支持本地、网络与电台三类歌曲的差异化操作。通过严格的模型验证、分页限制与数据库索引，保证了查询与导入的性能与稳定性。
+Songloft 的歌曲 CRUD 接口设计清晰，职责分离明确，支持本地、网络与电台三类歌曲的差异化操作。通过严格的模型验证、分页限制与数据库索引，保证了查询与导入的性能与稳定性。
 
 **新增** cache_hash 机制进一步增强了系统的健壮性和性能：
 - 通过唯一索引确保数据完整性

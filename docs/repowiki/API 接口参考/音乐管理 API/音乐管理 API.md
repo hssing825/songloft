@@ -13,8 +13,8 @@
 - [metadata.go](file://internal/services/metadata.go)
 - [proxy.go](file://internal/handlers/proxy.go)
 - [routers.go](file://internal/app/routers.go)
-- [search.go](file://jsplugins-src/mimusic-jsplugin-lxmusic/handlers/search.go)
-- [manager.go](file://jsplugins-src/mimusic-jsplugin-musictag/scraper/manager.go)
+- [search.go](file://jsplugins-src/songloft-jsplugin-lxmusic/handlers/search.go)
+- [manager.go](file://jsplugins-src/songloft-jsplugin-musictag/scraper/manager.go)
 - [docs.go](file://docs/docs.go)
 - [swagger.json](file://docs/swagger.json)
 - [swagger.yaml](file://docs/swagger.yaml)
@@ -53,7 +53,7 @@
 10. [附录](#附录)
 
 ## 简介
-MiMusic 音乐管理 API 提供了完整的音乐管理系统，包括本地音乐扫描、网络歌曲管理、音频元数据提取、扫描进度查询等功能。该系统支持多种音频格式，能够自动识别和提取音乐文件的元数据，包括标题、艺术家、专辑、时长、比特率等信息，并提供封面图片的处理和存储功能。
+Songloft 音乐管理 API 提供了完整的音乐管理系统，包括本地音乐扫描、网络歌曲管理、音频元数据提取、扫描进度查询等功能。该系统支持多种音频格式，能够自动识别和提取音乐文件的元数据，包括标题、艺术家、专辑、时长、比特率等信息，并提供封面图片的处理和存储功能。
 
 **重大更新** 新增歌词系统重构，引入 LyricPayload JSON 格式统一歌词存储和传输，新增 LyricFetcher 服务支持歌词远程 URL 拉取，扩展歌词来源类型，实现更灵活的歌词管理机制。
 
@@ -901,7 +901,7 @@ ProxyService --> ServeRemoteResource
 - [routers.go:284-289](file://internal/app/routers.go#L284-L289)
 
 ## 结论
-MiMusic 音乐管理 API 提供了完整的音乐管理系统，具有以下特点：
+Songloft 音乐管理 API 提供了完整的音乐管理系统，具有以下特点：
 
 1. **完整的CRUD操作**: 支持本地和网络歌曲的全生命周期管理
 2. **智能元数据提取**: 自动识别和提取音频文件的详细信息
@@ -1075,8 +1075,8 @@ const proxyUrl = `/api/v1/proxy?url=${encodeURIComponent('https://example.com/im
 - [api_client.dart:86-124](file://frontend/lib/core/network/api_client.dart#L86-L124)
 - [app_config.dart:1-124](file://frontend/lib/config/app_config.dart#L1-L124)
 - [music_test.go:376-408](file://internal/handlers/music_test.go#L376-L408)
-- [search.go:378-403](file://jsplugins-src/mimusic-jsplugin-lxmusic/handlers/search.go#L378-L403)
-- [manager.go:300-311](file://jsplugins-src/mimusic-jsplugin-musictag/scraper/manager.go#L300-L311)
+- [search.go:378-403](file://jsplugins-src/songloft-jsplugin-lxmusic/handlers/search.go#L378-L403)
+- [manager.go:300-311](file://jsplugins-src/songloft-jsplugin-musictag/scraper/manager.go#L300-L311)
 - [routers.go:284-289](file://internal/app/routers.go#L284-L289)
 - [lyric.go:8-18](file://internal/models/lyric.go#L8-L18)
 - [lyric_fetcher.go:33-77](file://internal/services/lyric_fetcher.go#L33-L77)

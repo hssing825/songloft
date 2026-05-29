@@ -23,7 +23,7 @@
 - [docs.go](file://docs/docs.go)
 - [CHANGELOG.md](file://CHANGELOG.md)
 - [sqlite_song.go](file://internal/database/sqlite_song.go)
-- [search.go](file://plugins/mimusic-plugin-lxmusic/handlers/search.go)
+- [search.go](file://plugins/songloft-plugin-lxmusic/handlers/search.go)
 - [manager.go](file://internal/plugins/manager.go)
 - [host.go](file://internal/plugins/host.go)
 - [plugin.go](file://internal/plugins/plugin.go)
@@ -59,7 +59,7 @@
 10. [附录](#附录)
 
 ## 简介
-本文件为 MiMusic 的完整 API 接口参考文档，覆盖认证管理、音乐管理、歌单管理、配置管理、扫描管理、插件管理、升级管理与资源代理等模块。文档基于实际代码实现，明确各接口的 HTTP 方法、URL 模式、请求/响应结构、认证方式与错误处理策略，并提供参数说明、请求示例、响应格式与最佳实践。
+本文件为 Songloft 的完整 API 接口参考文档，覆盖认证管理、音乐管理、歌单管理、配置管理、扫描管理、插件管理、升级管理与资源代理等模块。文档基于实际代码实现，明确各接口的 HTTP 方法、URL 模式、请求/响应结构、认证方式与错误处理策略，并提供参数说明、请求示例、响应格式与最佳实践。
 
 - 服务基地址：/api/v1
 - API版本：1.3.47
@@ -499,19 +499,19 @@ H-->>C : "200 JSON"
 
 ### JavaScript插件桥接接口
 - 存储API
-  - 方法与路径：mimusic.storage.get/set/delete/keys
+  - 方法与路径：songloft.storage.get/set/delete/keys
   - 权限：storage
   - 功能：读取/写入/删除插件私有存储，列出存储键
 - 歌曲API
-  - 方法与路径：mimusic.songs.list/getById/search
+  - 方法与路径：songloft.songs.list/getById/search
   - 权限：songs.read
   - 功能：获取歌曲列表、按ID获取歌曲、搜索歌曲
 - 歌单API
-  - 方法与路径：mimusic.playlists.list/getById/getSongs
+  - 方法与路径：songloft.playlists.list/getById/getSongs
   - 权限：playlists.read
   - 功能：获取歌单列表、按ID获取歌单、获取歌单歌曲
 - 插件间通信API
-  - 方法与路径：mimusic.comm.send/call/onMessage
+  - 方法与路径：songloft.comm.send/call/onMessage
   - 权限：inter-plugin
   - 功能：异步发送消息、同步调用其他插件、注册消息处理器
 
@@ -699,7 +699,7 @@ H7 --> S7["升级服务"]
 - [permissions.go:55-67](file://internal/jsplugin/permissions.go#L55-L67)
 
 ## 结论
-本接口参考文档基于实际代码实现，覆盖了 MiMusic 的主要功能模块。通过统一的认证机制、清晰的路由设计与完善的错误处理，系统提供了稳定可靠的 RESTful API。API版本现已升级至1.3.47，反映了JavaScript插件系统的重大增强，包括完整的插件生命周期管理、细粒度权限控制、插件间通信机制、优化的运行时环境以及手动插件更新功能。建议在生产环境中配合 CORS 白名单、限流与监控策略，确保安全与性能。
+本接口参考文档基于实际代码实现，覆盖了 Songloft 的主要功能模块。通过统一的认证机制、清晰的路由设计与完善的错误处理，系统提供了稳定可靠的 RESTful API。API版本现已升级至1.3.47，反映了JavaScript插件系统的重大增强，包括完整的插件生命周期管理、细粒度权限控制、插件间通信机制、优化的运行时环境以及手动插件更新功能。建议在生产环境中配合 CORS 白名单、限流与监控策略，确保安全与性能。
 
 ## 附录
 - 认证设置指南
@@ -719,7 +719,7 @@ H7 --> S7["升级服务"]
   - 应用版本：可通过 /api/v1/version 接口获取详细版本信息
   - 版本历史：最新版本为 1.3.47（2026-05-22）
 - JavaScript插件开发指南
-  - 使用mimusic全局对象访问系统功能
+  - 使用songloft全局对象访问系统功能
   - 正确声明插件权限，避免安全风险
   - 实现必要的生命周期回调（onInit、onDeinit）
   - 使用插件间通信机制实现功能扩展
@@ -739,7 +739,7 @@ H7 --> S7["升级服务"]
 - [models.go:79](file://internal/models/models.go#L79)
 - [swagger.json:15](file://docs/swagger.json#L15)
 - [version.json:1-8](file://build/version.json#L1-L8)
-- [search.go:465-474](file://plugins/mimusic-plugin-lxmusic/handlers/search.go#L465-L474)
+- [search.go:465-474](file://plugins/songloft-plugin-lxmusic/handlers/search.go#L465-L474)
 - [manager.go:26-32](file://internal/plugins/manager.go#L26-L32)
 - [host.go:83-181](file://internal/plugins/host.go#L83-L181)
 - [schema.go:152-185](file://internal/database/schema.go#L152-L185)

@@ -199,7 +199,7 @@ main() {
     log_ok "Makefile 已更新"
 
     # 2. 更新 main.go 中的 Swagger 版本
-    log_info "[2/3] 更新 main.go 中的 Swagger 版本..."
+    log_info "[2/4] 更新 main.go 中的 Swagger 版本..."
     if [ -f main.go ]; then
         if [ "$DRY_RUN" = true ]; then
             echo -e "${YELLOW}[dry-run]${NC} sed: @version -> ${new_version}" >&2
@@ -211,14 +211,23 @@ main() {
         log_warn "main.go 不存在，跳过"
     fi
 
-    # 3. git commit + tag（CHANGELOG.md 由 release.yml 在 CI 中更新并回写到 main）
-    log_info "[3/3] 提交更改并创建 git tag..."
+    # 3. 重新生成 Swagger 文档
+    log_info "[3/4] 重新生成 Swagger 文档..."
     if [ "$DRY_RUN" = true ]; then
-        echo -e "${YELLOW}[dry-run]${NC} git add Makefile main.go" >&2
+        echo -e "${YELLOW}[dry-run]${NC} make swagger" >&2
+    else
+        make swagger
+    fi
+    log_ok "Swagger 文档已更新"
+
+    # 4. git commit + tag（CHANGELOG.md 由 release.yml 在 CI 中更新并回写到 main）
+    log_info "[4/4] 提交更改并创建 git tag..."
+    if [ "$DRY_RUN" = true ]; then
+        echo -e "${YELLOW}[dry-run]${NC} git add Makefile main.go docs/" >&2
         echo -e "${YELLOW}[dry-run]${NC} git commit -m 'chore: release version ${new_version}'" >&2
         echo -e "${YELLOW}[dry-run]${NC} git tag -a 'v${new_version}' -m 'Release version ${new_version}'" >&2
     else
-        git add Makefile main.go
+        git add Makefile main.go docs/
         git commit -m "chore: release version ${new_version}"
         git tag -a "v${new_version}" -m "Release version ${new_version}"
     fi

@@ -180,11 +180,9 @@ $env:ADMIN_PASSWORD = "your_strong_password"
 ```bash
 # 🌟 完整版（推荐，包含 Web 前端，:latest 即完整版）
 docker pull songloft/songloft:latest
-# 或指定版本: docker pull songloft/songloft:1.4.1
 
 # 📦 精简版（不含 Web 前端，需搭配 Flutter 客户端使用）
 docker pull songloft/songloft:lite
-# 或指定版本: docker pull songloft/songloft:1.4.1-lite
 
 # 运行容器
 docker run -d \
@@ -343,9 +341,9 @@ curl http://localhost:58091/api/v1/version
 输出示例：
 
 ```text
-Songloft Version: 1.4.1
-Git Commit: c8f3171
-Build Time: 2026-05-28_13:46:11
+Songloft Version: x.y.z
+Git Commit: abc1234
+Build Time: 2026-01-01_00:00:00
 Build Type: full
 ```
 

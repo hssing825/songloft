@@ -19,7 +19,7 @@
 
 ```bash
 # 1. 本地升版号 + 打 tag + push
-./scripts/bump-version.sh patch        # 1.4.1 → 1.4.2
+./scripts/bump-version.sh patch        # x.y.z → x.y.(z+1)
 # 或：make bump TYPE=patch
 ```
 

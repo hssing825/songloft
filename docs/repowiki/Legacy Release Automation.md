@@ -31,9 +31,9 @@
 
 ## 简介
 
-Legacy Release Automation 是 MiMusic 项目中一套完整的发布自动化系统，负责协调后端 Go 服务、Flutter 前端以及 Docker 镜像的多平台发布流程。该系统通过 GitHub Actions 和本地脚本实现了高度自动化的版本管理、构建、测试、打包和发布流程。
+Legacy Release Automation 是 Songloft 项目中一套完整的发布自动化系统，负责协调后端 Go 服务、Flutter 前端以及 Docker 镜像的多平台发布流程。该系统通过 GitHub Actions 和本地脚本实现了高度自动化的版本管理、构建、测试、打包和发布流程。
 
-MiMusic 是一个基于 Go 和 Flutter 的轻量级音乐服务器，支持本地音乐文件管理、元数据提取和跨平台播放器客户端。发布自动化系统确保了代码质量、版本一致性和发布流程的标准化。
+Songloft 是一个基于 Go 和 Flutter 的轻量级音乐服务器，支持本地音乐文件管理、元数据提取和跨平台播放器客户端。发布自动化系统确保了代码质量、版本一致性和发布流程的标准化。
 
 ## 项目结构
 
@@ -451,7 +451,7 @@ GitCommit[GIT_COMMIT]
 BuildTime[BUILD_TIME]
 end
 subgraph "产物"
-MimusicBinary[mimusic 二进制]
+SongloftBinary[songloft 二进制]
 FFProbe[ffprobe 工具]
 EntryPoint[docker-entrypoint.sh]
 end
@@ -460,7 +460,7 @@ FullBuild --> Alpine
 Version --> Alpine
 GitCommit --> Alpine
 BuildTime --> Alpine
-Alpine --> MimusicBinary
+Alpine --> SongloftBinary
 Alpine --> FFProbe
 Alpine --> EntryPoint
 ```
@@ -681,7 +681,7 @@ Layer4 --> Local
 
 ## 结论
 
-Legacy Release Automation 系统通过 GitHub Actions 和本地脚本实现了 MiMusic 项目的完整发布自动化。该系统具有以下特点：
+Legacy Release Automation 系统通过 GitHub Actions 和本地脚本实现了 Songloft 项目的完整发布自动化。该系统具有以下特点：
 
 1. **高度自动化** - 从版本解析到制品发布的全流程自动化
 2. **多平台支持** - 支持 Linux、macOS、Windows 多种平台
@@ -689,7 +689,7 @@ Legacy Release Automation 系统通过 GitHub Actions 和本地脚本实现了 M
 4. **版本管理** - 基于 Conventional Commits 的智能版本管理
 5. **质量保证** - 自动化测试和校验和生成
 
-该系统确保了 MiMusic 项目的发布质量和效率，为开发者提供了可靠的发布基础设施。
+该系统确保了 Songloft 项目的发布质量和效率，为开发者提供了可靠的发布基础设施。
 
 ## 附录
 

@@ -42,12 +42,12 @@
 10. [附录](#附录)
 
 ## 简介
-本文件为 MiMusic JavaScript 插件管理 API 的完整接口文档，覆盖插件上传（单个与批量）、插件 CRUD 操作、插件状态管理、插件路由注册、插件模型定义、JavaScript 运行时与宿主函数、以及安全与资源限制等关键能力。文档同时提供面向前端的 API 使用说明与面向插件开发者的协议规范。
+本文件为 Songloft JavaScript 插件管理 API 的完整接口文档，覆盖插件上传（单个与批量）、插件 CRUD 操作、插件状态管理、插件路由注册、插件模型定义、JavaScript 运行时与宿主函数、以及安全与资源限制等关键能力。文档同时提供面向前端的 API 使用说明与面向插件开发者的协议规范。
 
 **更新** 插件管理API已从WASM插件系统完全迁移到新的JavaScript插件系统。JavaScript插件系统采用.zip压缩包格式，支持.js和.jsc字节码文件，提供更丰富的插件功能和更好的性能表现。新增JSPluginHandler和完整的RESTful端点，支持插件上传、状态管理、更新检查等功能。JavaScript插件系统包含权限管理、健康检查、热重载等高级特性，提供更完善的插件生命周期管理能力。
 
 ## 项目结构
-MiMusic 的 JavaScript 插件系统由后端 Handler、插件管理器、JavaScript 运行时、权限管理、健康检查与热重载等核心组件组成。核心路由在应用启动时注册到 /api/v1 下，JavaScript 插件相关路由包括：
+Songloft 的 JavaScript 插件系统由后端 Handler、插件管理器、JavaScript 运行时、权限管理、健康检查与热重载等核心组件组成。核心路由在应用启动时注册到 /api/v1 下，JavaScript 插件相关路由包括：
 - GET /api/v1/jsplugins：列出所有 JavaScript 插件
 - POST /api/v1/jsplugins/upload：上传 JavaScript 插件（.jsplugin.zip 压缩包）
 - GET /api/v1/jsplugins/{id}：获取插件详情
@@ -392,7 +392,7 @@ M-->>FE : "返回响应"
   - 路由调用：CallRouter，支持 GET/HEAD/POST/PUT/DELETE，自动注入插件专用 JWT。
   - 定时器：RegisterDelayTimer/CancelDelayTimer，支持超时回调。
   - 路由注册：RegisterRouter，自动拼接 /api/v1/jsplugin 前缀。
-  - 数据访问：mimusic.storage/songs/playlists 等 API 访问 Go 服务。
+  - 数据访问：songloft.storage/songs/playlists 等 API 访问 Go 服务。
   - JS 环境：CreateJSEnv/ExecuteJS/DestroyJSEnv，支持事件派发与桥接函数。
 - 超时控制：插件初始化/回调/反初始化/关闭均有超时保护，防止阻塞。
 - 字节码缓存：支持 .jsc 字节码文件，提升加载性能。
@@ -605,7 +605,7 @@ JSP["JSPluginUploadResponse"] --> FE["前端JS插件API"]
 - [frontend/lib/features/jsplugin/data/jsplugin_api.dart:109-139](file://frontend/lib/features/jsplugin/data/jsplugin_api.dart#L109-L139)
 
 ## 结论
-MiMusic JavaScript 插件管理 API 提供了完善的 JavaScript 插件生命周期管理、安全的 JavaScript 执行环境、灵活的路由与定时器机制，以及进程内 JS 运行时支持。通过标准化的协议与严格的超时与安全控制，系统在保证稳定性的同时，为插件开发者提供了丰富的扩展能力。
+Songloft JavaScript 插件管理 API 提供了完善的 JavaScript 插件生命周期管理、安全的 JavaScript 执行环境、灵活的路由与定时器机制，以及进程内 JS 运行时支持。通过标准化的协议与严格的超时与安全控制，系统在保证稳定性的同时，为插件开发者提供了丰富的扩展能力。
 
 **更新** JavaScript插件系统已完全替代WASM插件系统，提供更强大的功能和更好的性能表现。系统包含权限管理、健康检查、热重载、远程更新、静态资源托管等高级特性，形成完整的插件生态系统。新增JSPluginHandler和完整的RESTful端点，支持插件上传、状态管理、更新检查等功能。JavaScript插件系统采用.zip压缩包格式，支持.js和.jsc字节码文件，提供更好的性能和安全性。前端JS插件API提供增强的上传响应结构，支持批量上传结果跟踪和错误报告，显著提升用户体验。
 

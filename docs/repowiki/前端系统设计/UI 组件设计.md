@@ -32,7 +32,7 @@
 10. [附录](#附录)
 
 ## 简介
-本设计文档聚焦 MiMusic Web 前端 UI 组件体系，围绕布局组件（AppLayout、BottomTabs、MiniPlayer）、播放器组件（Player、MobilePlayer、PlaylistSlideover）、模态框组件系统（AlertModal、ConfirmModal、AddToPlaylistModal）以及滚动文本与歌曲选择器组件进行深入解析。文档同时阐述响应式设计策略、组件 API、事件与样式定制、使用示例与最佳实践，帮助开发者快速理解与扩展 UI 组件。
+本设计文档聚焦 Songloft Web 前端 UI 组件体系，围绕布局组件（AppLayout、BottomTabs、MiniPlayer）、播放器组件（Player、MobilePlayer、PlaylistSlideover）、模态框组件系统（AlertModal、ConfirmModal、AddToPlaylistModal）以及滚动文本与歌曲选择器组件进行深入解析。文档同时阐述响应式设计策略、组件 API、事件与样式定制、使用示例与最佳实践，帮助开发者快速理解与扩展 UI 组件。
 
 ## 项目结构
 前端采用基于 Vue 3 + Vite 的单页应用，UI 组件主要位于 web/src/components 下，布局组件位于 web/src/layouts，状态管理使用 Pinia（stores），可组合逻辑通过 composables 提供。
@@ -353,7 +353,7 @@ ScrollingText --> Playlist["PlaylistSlideover.vue"]
 - [ConfirmModal.vue:1-71](file://web/src/components/ConfirmModal.vue#L1-L71)
 
 ## 结论
-MiMusic UI 组件体系以 AppLayout 为核心布局容器，围绕播放器组件群构建完整的桌面/移动端播放体验；通过 PlayerStore 与 useAudio 实现状态与底层播放能力的解耦；模态框组件系统提供一致的全局交互体验；ScrollingText 与 SongPickerModal 提升信息密度与可用性。整体设计强调响应式适配、可维护性与用户体验，适合在多端场景稳定演进。
+Songloft UI 组件体系以 AppLayout 为核心布局容器，围绕播放器组件群构建完整的桌面/移动端播放体验；通过 PlayerStore 与 useAudio 实现状态与底层播放能力的解耦；模态框组件系统提供一致的全局交互体验；ScrollingText 与 SongPickerModal 提升信息密度与可用性。整体设计强调响应式适配、可维护性与用户体验，适合在多端场景稳定演进。
 
 [本节为总结，无需列出具体文件]
 

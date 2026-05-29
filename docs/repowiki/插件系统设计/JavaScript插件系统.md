@@ -20,13 +20,13 @@
 - [internal/app/routers.go](file://internal/app/routers.go)
 - [plugin-toolchain/packages/jsc/main.go](file://plugin-toolchain/packages/jsc/main.go)
 - [frontend/lib/features/jsplugin/data/jsplugin_api.dart](file://frontend/lib/features/jsplugin/data/jsplugin_api.dart)
-- [jsplugins-src/mimusic-jsplugin-lxmusic/plugin.json](file://jsplugins-src/mimusic-jsplugin-lxmusic/plugin.json)
-- [jsplugins-src/mimusic-jsplugin-lxmusic/src/main.ts](file://jsplugins-src/mimusic-jsplugin-lxmusic/src/main.ts)
-- [jsplugins-src/mimusic-jsplugin-lxmusic/package.json](file://jsplugins-src/mimusic-jsplugin-lxmusic/package.json)
-- [jsplugins-src/mimusic-jsplugin-lxmusic/tsconfig.json](file://jsplugins-src/mimusic-jsplugin-lxmusic/tsconfig.json)
-- [jsplugins-src/mimusic-jsplugin-lxmusic/static/index.html](file://jsplugins-src/mimusic-jsplugin-lxmusic/static/index.html)
-- [jsplugins-src/mimusic-jsplugin-lxmusic/README.md](file://jsplugins-src/mimusic-jsplugin-lxmusic/README.md)
-- [jsplugins-src/mimusic-jsplugin-lxmusic/.github/workflows/release.yml](file://jsplugins-src/mimusic-jsplugin-lxmusic/.github/workflows/release.yml)
+- [jsplugins-src/songloft-jsplugin-lxmusic/plugin.json](file://jsplugins-src/songloft-jsplugin-lxmusic/plugin.json)
+- [jsplugins-src/songloft-jsplugin-lxmusic/src/main.ts](file://jsplugins-src/songloft-jsplugin-lxmusic/src/main.ts)
+- [jsplugins-src/songloft-jsplugin-lxmusic/package.json](file://jsplugins-src/songloft-jsplugin-lxmusic/package.json)
+- [jsplugins-src/songloft-jsplugin-lxmusic/tsconfig.json](file://jsplugins-src/songloft-jsplugin-lxmusic/tsconfig.json)
+- [jsplugins-src/songloft-jsplugin-lxmusic/static/index.html](file://jsplugins-src/songloft-jsplugin-lxmusic/static/index.html)
+- [jsplugins-src/songloft-jsplugin-lxmusic/README.md](file://jsplugins-src/songloft-jsplugin-lxmusic/README.md)
+- [jsplugins-src/songloft-jsplugin-lxmusic/.github/workflows/release.yml](file://jsplugins-src/songloft-jsplugin-lxmusic/.github/workflows/release.yml)
 - [jsplugins/README.md](file://jsplugins/README.md)
 - [jsplugins/xiaomi.json](file://jsplugins/xiaomi.json)
 </cite>
@@ -60,7 +60,7 @@
 
 ## 概述
 
-JavaScript 插件系统是 mimusic 应用的核心扩展机制，允许开发者通过 JavaScript 代码扩展应用功能。该系统支持两种入口文件格式：传统的 JavaScript 源码文件 (.js) 和经过预编译的字节码文件 (.jsc)，提供了灵活的插件开发和部署选项。
+JavaScript 插件系统是 songloft 应用的核心扩展机制，允许开发者通过 JavaScript 代码扩展应用功能。该系统支持两种入口文件格式：传统的 JavaScript 源码文件 (.js) 和经过预编译的字节码文件 (.jsc)，提供了灵活的插件开发和部署选项。
 
 **更新** 完整的 JavaScript 虚拟机实现和隔离环境管理功能，包括 JSEnvManager、JSEnv、BridgeHandler 等核心组件，支持独立的 JavaScript 运行时环境创建、JavaScript 代码执行、事件等待、并行执行等功能。系统现已重构为异步架构，支持真正的异步执行和插件管理API。
 
@@ -207,11 +207,11 @@ JRM->>JRM : 记录归属关系
 
 ### jsenv API 设计
 
-插件可以通过 mimusic.jsenv API 创建和管理独立的 JavaScript 环境：
+插件可以通过 songloft.jsenv API 创建和管理独立的 JavaScript 环境：
 
 ```mermaid
 flowchart TD
-A[mimusic.jsenv] --> B[jsenv.create]
+A[songloft.jsenv] --> B[jsenv.create]
 A --> C[jsenv.execute]
 A --> D[jsenv.executeWait]
 A --> E[jsenv.executeParallel]
@@ -646,10 +646,10 @@ end
 ```
 
 **图表来源**
-- [jsplugins-src/mimusic-jsplugin-lxmusic/plugin.json:1-17](file://jsplugins-src/mimusic-jsplugin-lxmusic/plugin.json#L1-L17)
-- [jsplugins-src/mimusic-jsplugin-lxmusic/src/main.ts:1-34](file://jsplugins-src/mimusic-jsplugin-lxmusic/src/main.ts#L1-L34)
-- [jsplugins-src/mimusic-jsplugin-lxmusic/package.json:1-18](file://jsplugins-src/mimusic-jsplugin-lxmusic/package.json#L1-L18)
-- [jsplugins-src/mimusic-jsplugin-lxmusic/tsconfig.json:1-15](file://jsplugins-src/mimusic-jsplugin-lxmusic/tsconfig.json#L1-L15)
+- [jsplugins-src/songloft-jsplugin-lxmusic/plugin.json:1-17](file://jsplugins-src/songloft-jsplugin-lxmusic/plugin.json#L1-L17)
+- [jsplugins-src/songloft-jsplugin-lxmusic/src/main.ts:1-34](file://jsplugins-src/songloft-jsplugin-lxmusic/src/main.ts#L1-L34)
+- [jsplugins-src/songloft-jsplugin-lxmusic/package.json:1-18](file://jsplugins-src/songloft-jsplugin-lxmusic/package.json#L1-L18)
+- [jsplugins-src/songloft-jsplugin-lxmusic/tsconfig.json:1-15](file://jsplugins-src/songloft-jsplugin-lxmusic/tsconfig.json#L1-L15)
 
 ### TypeScript源码示例
 
@@ -665,7 +665,7 @@ E --> F[插件生命周期管理]
 ```
 
 **图表来源**
-- [jsplugins-src/mimusic-jsplugin-lxmusic/src/main.ts:15-34](file://jsplugins-src/mimusic-jsplugin-lxmusic/src/main.ts#L15-L34)
+- [jsplugins-src/songloft-jsplugin-lxmusic/src/main.ts:15-34](file://jsplugins-src/songloft-jsplugin-lxmusic/src/main.ts#L15-L34)
 
 ### 开发工具链
 
@@ -673,17 +673,17 @@ E --> F[插件生命周期管理]
 
 | 工具 | 功能描述 | 使用场景 |
 |------|----------|----------|
-| mimusic-plugin build | 构建插件包 | 生产环境打包 |
-| mimusic-plugin dev | 开发模式 | 热重载调试 |
-| mimusic-plugin validate | 验证插件 | 发布前检查 |
-| mimusic-plugin publish | 发布插件 | 自动化发布 |
+| songloft-plugin build | 构建插件包 | 生产环境打包 |
+| songloft-plugin dev | 开发模式 | 热重载调试 |
+| songloft-plugin validate | 验证插件 | 发布前检查 |
+| songloft-plugin publish | 发布插件 | 自动化发布 |
 
 **章节来源**
-- [jsplugins-src/mimusic-jsplugin-lxmusic/plugin.json:1-17](file://jsplugins-src/mimusic-jsplugin-lxmusic/plugin.json#L1-L17)
-- [jsplugins-src/mimusic-jsplugin-lxmusic/src/main.ts:1-34](file://jsplugins-src/mimusic-jsplugin-lxmusic/src/main.ts#L1-L34)
-- [jsplugins-src/mimusic-jsplugin-lxmusic/package.json:6-11](file://jsplugins-src/mimusic-jsplugin-lxmusic/package.json#L6-L11)
-- [jsplugins-src/mimusic-jsplugin-lxmusic/tsconfig.json:2-12](file://jsplugins-src/mimusic-jsplugin-lxmusic/tsconfig.json#L2-L12)
-- [jsplugins-src/mimusic-jsplugin-lxmusic/README.md:7-12](file://jsplugins-src/mimusic-jsplugin-lxmusic/README.md#L7-L12)
+- [jsplugins-src/songloft-jsplugin-lxmusic/plugin.json:1-17](file://jsplugins-src/songloft-jsplugin-lxmusic/plugin.json#L1-L17)
+- [jsplugins-src/songloft-jsplugin-lxmusic/src/main.ts:1-34](file://jsplugins-src/songloft-jsplugin-lxmusic/src/main.ts#L1-L34)
+- [jsplugins-src/songloft-jsplugin-lxmusic/package.json:6-11](file://jsplugins-src/songloft-jsplugin-lxmusic/package.json#L6-L11)
+- [jsplugins-src/songloft-jsplugin-lxmusic/tsconfig.json:2-12](file://jsplugins-src/songloft-jsplugin-lxmusic/tsconfig.json#L2-L12)
+- [jsplugins-src/songloft-jsplugin-lxmusic/README.md:7-12](file://jsplugins-src/songloft-jsplugin-lxmusic/README.md#L7-L12)
 
 ## 性能优化
 

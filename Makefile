@@ -1,7 +1,7 @@
 # 变量定义
 BINARY_NAME=songloft
 GO=CGO_ENABLED=0 GOAMD64=v1 go
-GO_VERSION=1.25.6
+GO_VERSION=1.26
 GOFLAGS=-v
 
 # 版本信息

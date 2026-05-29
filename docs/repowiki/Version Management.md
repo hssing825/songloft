@@ -39,7 +39,7 @@
 
 ## 简介
 
-MiMusic 是一个轻量级音乐服务器应用，采用 Go 语言开发，支持本地音乐管理、网络歌曲、电台和歌单功能。本文档详细介绍了项目的版本管理系统，包括版本信息注入、版本号升级、发布流程和持续集成等方面。
+Songloft 是一个轻量级音乐服务器应用，采用 Go 语言开发，支持本地音乐管理、网络歌曲、电台和歌单功能。本文档详细介绍了项目的版本管理系统，包括版本信息注入、版本号升级、发布流程和持续集成等方面。
 
 **最新版本**：1.4.1
 
@@ -142,8 +142,8 @@ Start([开始构建]) --> ParseVersion["解析版本信息<br/>VERSION/GIT_COMMI
 ParseVersion --> InjectFlags["注入构建标志<br/>-ldflags 参数"]
 InjectFlags --> BuildLite["构建轻量版本<br/>无前端嵌入"]
 InjectFlags --> BuildFull["构建完整版本<br/>嵌入前端资源"]
-BuildLite --> Output1["输出 mimusic-平台"]
-BuildFull --> Output2["输出 mimusic-平台-full"]
+BuildLite --> Output1["输出 songloft-平台"]
+BuildFull --> Output2["输出 songloft-平台-full"]
 Output1 --> End([完成])
 Output2 --> End
 ```
@@ -536,7 +536,7 @@ Scripts --> VersionCore
 
 ## 结论
 
-MiMusic 的版本管理系统采用了现代化的自动化方法，通过以下关键特性确保了高效的版本控制：
+Songloft 的版本管理系统采用了现代化的自动化方法，通过以下关键特性确保了高效的版本控制：
 
 1. **自动化版本升级**：提供三种升级策略，支持无交互式操作
 2. **完整的发布流程**：从构建到发布的全自动化流程

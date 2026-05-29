@@ -29,7 +29,7 @@
 10. [附录](#附录)
 
 ## 简介
-本设计文档面向 MiMusic Flutter 前端应用，聚焦于应用入口 main.dart 的初始化流程、依赖注入配置、环境变量加载与应用启动序列；梳理核心模块组织结构（core 目录下的路由、中间件、配置管理等）；阐述应用生命周期管理（启动、运行、关闭阶段）；说明配置管理策略（开发/生产环境切换、动态配置加载与验证机制）；并提供架构图与模块依赖关系，帮助开发者快速理解整体架构设计。
+本设计文档面向 Songloft Flutter 前端应用，聚焦于应用入口 main.dart 的初始化流程、依赖注入配置、环境变量加载与应用启动序列；梳理核心模块组织结构（core 目录下的路由、中间件、配置管理等）；阐述应用生命周期管理（启动、运行、关闭阶段）；说明配置管理策略（开发/生产环境切换、动态配置加载与验证机制）；并提供架构图与模块依赖关系，帮助开发者快速理解整体架构设计。
 
 ## 项目结构
 前端工程位于 frontend/lib，采用按功能域分层的组织方式：
@@ -111,7 +111,7 @@ SHELL --> AUDIO
   - AuthInterceptor：自动注入 Authorization 头、401 自动刷新 Token、并发刷新保护、重试原请求
 
 - 音频服务
-  - MiMusicAudioHandler：基于 audio_service + just_audio，实现通知栏控制、媒体元数据、播放源切换与降级处理
+  - SongloftAudioHandler：基于 audio_service + just_audio，实现通知栏控制、媒体元数据、播放源切换与降级处理
 
 - 主题与响应式
   - AppTheme：基于 Material3，支持亮/暗/系统主题；响应式尺寸与控件样式
@@ -133,7 +133,7 @@ SHELL --> AUDIO
 graph TB
 MAIN["main.dart<br/>入口初始化"] --> CFG["AppConfig<br/>部署模式与基础URL"]
 MAIN --> PREFS["AppPreferences<br/>本地偏好"]
-MAIN --> AUDIO["MiMusicAudioHandler<br/>音频服务"]
+MAIN --> AUDIO["SongloftAudioHandler<br/>音频服务"]
 MAIN --> ROUTER["GoRouter<br/>路由与认证跳转"]
 ROUTER --> SHELL["ShellLayout<br/>布局与底部播放器"]
 SHELL --> AUDIO
@@ -279,7 +279,7 @@ Dio-->>UI : 返回成功响应
 
 ```mermaid
 classDiagram
-class MiMusicAudioHandler {
+class SongloftAudioHandler {
 +ensureInitialized()
 +playSong(song, accessToken)
 +updateDuration(duration)
@@ -301,8 +301,8 @@ class JustAudio {
 +AudioPlayer
 +AudioSource
 }
-MiMusicAudioHandler ..|> AudioService : "实现"
-MiMusicAudioHandler --> JustAudio : "使用"
+SongloftAudioHandler ..|> AudioService : "实现"
+SongloftAudioHandler --> JustAudio : "使用"
 ```
 
 图表来源
@@ -441,7 +441,7 @@ SHELL --> AUDIO
 - [frontend/lib/core/storage/app_preferences.dart:48-61](file://frontend/lib/core/storage/app_preferences.dart#L48-L61)
 
 ## 结论
-MiMusic Flutter 前端通过清晰的入口初始化、模块化的 core 基础设施、基于 Riverpod 的依赖注入与 Provider 管理、以及完善的网络与音频能力，实现了跨平台的一致体验。embedded 与独立部署两种模式通过 AppConfig 与 AppPreferences 灵活切换，满足不同部署场景需求。建议在后续迭代中持续优化错误处理与性能监控，进一步提升稳定性与用户体验。
+Songloft Flutter 前端通过清晰的入口初始化、模块化的 core 基础设施、基于 Riverpod 的依赖注入与 Provider 管理、以及完善的网络与音频能力，实现了跨平台的一致体验。embedded 与独立部署两种模式通过 AppConfig 与 AppPreferences 灵活切换，满足不同部署场景需求。建议在后续迭代中持续优化错误处理与性能监控，进一步提升稳定性与用户体验。
 
 ## 附录
 - 架构背景参考：前端架构与嵌入式部署说明

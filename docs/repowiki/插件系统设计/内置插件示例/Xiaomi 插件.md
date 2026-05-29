@@ -5,21 +5,21 @@
 - [internal/app/routers.go](file://internal/app/routers.go)
 - [internal/models/models.go](file://internal/models/models.go)
 - [plugin/api/plugin/static_handler.go](file://plugin/api/plugin/static_handler.go)
-- [plugins/mimusic-plugin-xiaomi/main.go](file://plugins/mimusic-plugin-xiaomi/main.go)
-- [plugins/mimusic-plugin-xiaomi/README.md](file://plugins/mimusic-plugin-xiaomi/README.md)
-- [plugins/mimusic-plugin-xiaomi/handlers/account_handler.go](file://plugins/mimusic-plugin-xiaomi/handlers/account_handler.go)
-- [plugins/mimusic-plugin-xiaomi/handlers/auth_handler.go](file://plugins/mimusic-plugin-xiaomi/handlers/auth_handler.go)
-- [plugins/mimusic-plugin-xiaomi/handlers/config_handler.go](file://plugins/mimusic-plugin-xiaomi/handlers/config_handler.go)
-- [plugins/mimusic-plugin-xiaomi/handlers/device_handler.go](file://plugins/mimusic-plugin-xiaomi/handlers/device_handler.go)
-- [plugins/mimusic-plugin-xiaomi/handlers/playlist_handler.go](file://plugins/mimusic-plugin-xiaomi/handlers/playlist_handler.go)
-- [plugins/mimusic-plugin-xiaomi/account/manager.go](file://plugins/mimusic-plugin-xiaomi/account/manager.go)
-- [plugins/mimusic-plugin-xiaomi/account/types.go](file://plugins/mimusic-plugin-xiaomi/account/types.go)
-- [plugins/mimusic-plugin-xiaomi/auth/session.go](file://plugins/mimusic-plugin-xiaomi/auth/session.go)
-- [plugins/mimusic-plugin-xiaomi/auth/types.go](file://plugins/mimusic-plugin-xiaomi/auth/types.go)
-- [plugins/mimusic-plugin-xiaomi/config/manager.go](file://plugins/mimusic-plugin-xiaomi/config/manager.go)
-- [plugins/mimusic-plugin-xiaomi/config/types.go](file://plugins/mimusic-plugin-xiaomi/config/types.go)
-- [plugins/mimusic-plugin-xiaomi/mina/types.go](file://plugins/mimusic-plugin-xiaomi/mina/types.go)
-- [plugins/mimusic-plugin-xiaomi/player/url_builder.go](file://plugins/mimusic-plugin-xiaomi/player/url_builder.go)
+- [plugins/songloft-plugin-xiaomi/main.go](file://plugins/songloft-plugin-xiaomi/main.go)
+- [plugins/songloft-plugin-xiaomi/README.md](file://plugins/songloft-plugin-xiaomi/README.md)
+- [plugins/songloft-plugin-xiaomi/handlers/account_handler.go](file://plugins/songloft-plugin-xiaomi/handlers/account_handler.go)
+- [plugins/songloft-plugin-xiaomi/handlers/auth_handler.go](file://plugins/songloft-plugin-xiaomi/handlers/auth_handler.go)
+- [plugins/songloft-plugin-xiaomi/handlers/config_handler.go](file://plugins/songloft-plugin-xiaomi/handlers/config_handler.go)
+- [plugins/songloft-plugin-xiaomi/handlers/device_handler.go](file://plugins/songloft-plugin-xiaomi/handlers/device_handler.go)
+- [plugins/songloft-plugin-xiaomi/handlers/playlist_handler.go](file://plugins/songloft-plugin-xiaomi/handlers/playlist_handler.go)
+- [plugins/songloft-plugin-xiaomi/account/manager.go](file://plugins/songloft-plugin-xiaomi/account/manager.go)
+- [plugins/songloft-plugin-xiaomi/account/types.go](file://plugins/songloft-plugin-xiaomi/account/types.go)
+- [plugins/songloft-plugin-xiaomi/auth/session.go](file://plugins/songloft-plugin-xiaomi/auth/session.go)
+- [plugins/songloft-plugin-xiaomi/auth/types.go](file://plugins/songloft-plugin-xiaomi/auth/types.go)
+- [plugins/songloft-plugin-xiaomi/config/manager.go](file://plugins/songloft-plugin-xiaomi/config/manager.go)
+- [plugins/songloft-plugin-xiaomi/config/types.go](file://plugins/songloft-plugin-xiaomi/config/types.go)
+- [plugins/songloft-plugin-xiaomi/mina/types.go](file://plugins/songloft-plugin-xiaomi/mina/types.go)
+- [plugins/songloft-plugin-xiaomi/player/url_builder.go](file://plugins/songloft-plugin-xiaomi/player/url_builder.go)
 </cite>
 
 ## 目录
@@ -35,10 +35,10 @@
 10. [附录](#附录)
 
 ## 简介
-本文件面向 Xiaomi 插件的实现与集成，聚焦于 mimusic-plugin-xiaomi 在小米生态中的角色与能力边界。根据仓库现有代码与文档线索，该插件以 WASM 形式作为后端插件运行，通过统一的插件宿主框架暴露 REST 接口，并提供与小米生态相关的账户、配置、设备与播放列表等能力。本文将从系统架构、组件职责、数据流与处理逻辑、依赖关系与性能优化等方面进行系统化梳理，并给出可操作的排障建议。
+本文件面向 Xiaomi 插件的实现与集成，聚焦于 songloft-plugin-xiaomi 在小米生态中的角色与能力边界。根据仓库现有代码与文档线索，该插件以 WASM 形式作为后端插件运行，通过统一的插件宿主框架暴露 REST 接口，并提供与小米生态相关的账户、配置、设备与播放列表等能力。本文将从系统架构、组件职责、数据流与处理逻辑、依赖关系与性能优化等方面进行系统化梳理，并给出可操作的排障建议。
 
 ## 项目结构
-Xiaomi 插件位于 plugins/mimusic-plugin-xiaomi 目录下，采用 Go 语言编写，遵循 mimusic 的插件开发规范。其主要模块包括：
+Xiaomi 插件位于 plugins/songloft-plugin-xiaomi 目录下，采用 Go 语言编写，遵循 songloft 的插件开发规范。其主要模块包括：
 - 账户与认证：account、auth
 - 配置管理：config
 - 设备与 Mina 服务：mina
@@ -73,18 +73,18 @@ B_router --> A_handlers
 ```
 
 图表来源
-- [plugins/mimusic-plugin-xiaomi/main.go](file://plugins/mimusic-plugin-xiaomi/main.go)
-- [plugins/mimusic-plugin-xiaomi/handlers/account_handler.go](file://plugins/mimusic-plugin-xiaomi/handlers/account_handler.go)
-- [plugins/mimusic-plugin-xiaomi/handlers/auth_handler.go](file://plugins/mimusic-plugin-xiaomi/handlers/auth_handler.go)
-- [plugins/mimusic-plugin-xiaomi/handlers/config_handler.go](file://plugins/mimusic-plugin-xiaomi/handlers/config_handler.go)
-- [plugins/mimusic-plugin-xiaomi/handlers/device_handler.go](file://plugins/mimusic-plugin-xiaomi/handlers/device_handler.go)
-- [plugins/mimusic-plugin-xiaomi/handlers/playlist_handler.go](file://plugins/mimusic-plugin-xiaomi/handlers/playlist_handler.go)
+- [plugins/songloft-plugin-xiaomi/main.go](file://plugins/songloft-plugin-xiaomi/main.go)
+- [plugins/songloft-plugin-xiaomi/handlers/account_handler.go](file://plugins/songloft-plugin-xiaomi/handlers/account_handler.go)
+- [plugins/songloft-plugin-xiaomi/handlers/auth_handler.go](file://plugins/songloft-plugin-xiaomi/handlers/auth_handler.go)
+- [plugins/songloft-plugin-xiaomi/handlers/config_handler.go](file://plugins/songloft-plugin-xiaomi/handlers/config_handler.go)
+- [plugins/songloft-plugin-xiaomi/handlers/device_handler.go](file://plugins/songloft-plugin-xiaomi/handlers/device_handler.go)
+- [plugins/songloft-plugin-xiaomi/handlers/playlist_handler.go](file://plugins/songloft-plugin-xiaomi/handlers/playlist_handler.go)
 - [internal/app/routers.go](file://internal/app/routers.go)
 - [plugin/api/plugin/static_handler.go](file://plugin/api/plugin/static_handler.go)
 
 章节来源
-- [plugins/mimusic-plugin-xiaomi/main.go](file://plugins/mimusic-plugin-xiaomi/main.go)
-- [plugins/mimusic-plugin-xiaomi/README.md](file://plugins/mimusic-plugin-xiaomi/README.md)
+- [plugins/songloft-plugin-xiaomi/main.go](file://plugins/songloft-plugin-xiaomi/main.go)
+- [plugins/songloft-plugin-xiaomi/README.md](file://plugins/songloft-plugin-xiaomi/README.md)
 - [internal/app/routers.go](file://internal/app/routers.go)
 - [plugin/api/plugin/static_handler.go](file://plugin/api/plugin/static_handler.go)
 
@@ -97,14 +97,14 @@ B_router --> A_handlers
 - 静态资源与路由：通过插件静态处理器提供前端页面与脚本，结合后端路由暴露 API。
 
 章节来源
-- [plugins/mimusic-plugin-xiaomi/account/manager.go](file://plugins/mimusic-plugin-xiaomi/account/manager.go)
-- [plugins/mimusic-plugin-xiaomi/account/types.go](file://plugins/mimusic-plugin-xiaomi/account/types.go)
-- [plugins/mimusic-plugin-xiaomi/auth/session.go](file://plugins/mimusic-plugin-xiaomi/auth/session.go)
-- [plugins/mimusic-plugin-xiaomi/auth/types.go](file://plugins/mimusic-plugin-xiaomi/auth/types.go)
-- [plugins/mimusic-plugin-xiaomi/config/manager.go](file://plugins/mimusic-plugin-xiaomi/config/manager.go)
-- [plugins/mimusic-plugin-xiaomi/config/types.go](file://plugins/mimusic-plugin-xiaomi/config/types.go)
-- [plugins/mimusic-plugin-xiaomi/mina/types.go](file://plugins/mimusic-plugin-xiaomi/mina/types.go)
-- [plugins/mimusic-plugin-xiaomi/player/url_builder.go](file://plugins/mimusic-plugin-xiaomi/player/url_builder.go)
+- [plugins/songloft-plugin-xiaomi/account/manager.go](file://plugins/songloft-plugin-xiaomi/account/manager.go)
+- [plugins/songloft-plugin-xiaomi/account/types.go](file://plugins/songloft-plugin-xiaomi/account/types.go)
+- [plugins/songloft-plugin-xiaomi/auth/session.go](file://plugins/songloft-plugin-xiaomi/auth/session.go)
+- [plugins/songloft-plugin-xiaomi/auth/types.go](file://plugins/songloft-plugin-xiaomi/auth/types.go)
+- [plugins/songloft-plugin-xiaomi/config/manager.go](file://plugins/songloft-plugin-xiaomi/config/manager.go)
+- [plugins/songloft-plugin-xiaomi/config/types.go](file://plugins/songloft-plugin-xiaomi/config/types.go)
+- [plugins/songloft-plugin-xiaomi/mina/types.go](file://plugins/songloft-plugin-xiaomi/mina/types.go)
+- [plugins/songloft-plugin-xiaomi/player/url_builder.go](file://plugins/songloft-plugin-xiaomi/player/url_builder.go)
 
 ## 架构总览
 Xiaomi 插件通过统一的插件宿主框架注册路由与静态资源，对外提供 REST API。后端处理器根据业务域划分到 account、auth、config、device、playlist 等模块，各模块内部再细分为 manager、types 等文件，形成清晰的分层与职责边界。
@@ -142,11 +142,11 @@ Handler-->>Client : 统一响应
 
 图表来源
 - [internal/app/routers.go](file://internal/app/routers.go)
-- [plugins/mimusic-plugin-xiaomi/handlers/account_handler.go](file://plugins/mimusic-plugin-xiaomi/handlers/account_handler.go)
-- [plugins/mimusic-plugin-xiaomi/handlers/auth_handler.go](file://plugins/mimusic-plugin-xiaomi/handlers/auth_handler.go)
-- [plugins/mimusic-plugin-xiaomi/handlers/config_handler.go](file://plugins/mimusic-plugin-xiaomi/handlers/config_handler.go)
-- [plugins/mimusic-plugin-xiaomi/handlers/device_handler.go](file://plugins/mimusic-plugin-xiaomi/handlers/device_handler.go)
-- [plugins/mimusic-plugin-xiaomi/handlers/playlist_handler.go](file://plugins/mimusic-plugin-xiaomi/handlers/playlist_handler.go)
+- [plugins/songloft-plugin-xiaomi/handlers/account_handler.go](file://plugins/songloft-plugin-xiaomi/handlers/account_handler.go)
+- [plugins/songloft-plugin-xiaomi/handlers/auth_handler.go](file://plugins/songloft-plugin-xiaomi/handlers/auth_handler.go)
+- [plugins/songloft-plugin-xiaomi/handlers/config_handler.go](file://plugins/songloft-plugin-xiaomi/handlers/config_handler.go)
+- [plugins/songloft-plugin-xiaomi/handlers/device_handler.go](file://plugins/songloft-plugin-xiaomi/handlers/device_handler.go)
+- [plugins/songloft-plugin-xiaomi/handlers/playlist_handler.go](file://plugins/songloft-plugin-xiaomi/handlers/playlist_handler.go)
 
 ## 详细组件分析
 
@@ -171,12 +171,12 @@ AccountManager --> Account : "管理"
 ```
 
 图表来源
-- [plugins/mimusic-plugin-xiaomi/account/manager.go](file://plugins/mimusic-plugin-xiaomi/account/manager.go)
-- [plugins/mimusic-plugin-xiaomi/account/types.go](file://plugins/mimusic-plugin-xiaomi/account/types.go)
+- [plugins/songloft-plugin-xiaomi/account/manager.go](file://plugins/songloft-plugin-xiaomi/account/manager.go)
+- [plugins/songloft-plugin-xiaomi/account/types.go](file://plugins/songloft-plugin-xiaomi/account/types.go)
 
 章节来源
-- [plugins/mimusic-plugin-xiaomi/account/manager.go](file://plugins/mimusic-plugin-xiaomi/account/manager.go)
-- [plugins/mimusic-plugin-xiaomi/account/types.go](file://plugins/mimusic-plugin-xiaomi/account/types.go)
+- [plugins/songloft-plugin-xiaomi/account/manager.go](file://plugins/songloft-plugin-xiaomi/account/manager.go)
+- [plugins/songloft-plugin-xiaomi/account/types.go](file://plugins/songloft-plugin-xiaomi/account/types.go)
 
 ### 认证与会话
 - 会话管理：维护登录态、令牌刷新与撤销流程，确保安全访问。
@@ -201,12 +201,12 @@ Proceed --> End(["结束"])
 ```
 
 图表来源
-- [plugins/mimusic-plugin-xiaomi/auth/session.go](file://plugins/mimusic-plugin-xiaomi/auth/session.go)
-- [plugins/mimusic-plugin-xiaomi/auth/types.go](file://plugins/mimusic-plugin-xiaomi/auth/types.go)
+- [plugins/songloft-plugin-xiaomi/auth/session.go](file://plugins/songloft-plugin-xiaomi/auth/session.go)
+- [plugins/songloft-plugin-xiaomi/auth/types.go](file://plugins/songloft-plugin-xiaomi/auth/types.go)
 
 章节来源
-- [plugins/mimusic-plugin-xiaomi/auth/session.go](file://plugins/mimusic-plugin-xiaomi/auth/session.go)
-- [plugins/mimusic-plugin-xiaomi/auth/types.go](file://plugins/mimusic-plugin-xiaomi/auth/types.go)
+- [plugins/songloft-plugin-xiaomi/auth/session.go](file://plugins/songloft-plugin-xiaomi/auth/session.go)
+- [plugins/songloft-plugin-xiaomi/auth/types.go](file://plugins/songloft-plugin-xiaomi/auth/types.go)
 
 ### 配置管理
 - 职责：集中管理插件配置项，支持读取与更新，保障运行参数的一致性。
@@ -228,12 +228,12 @@ ConfigManager --> Config : "读写"
 ```
 
 图表来源
-- [plugins/mimusic-plugin-xiaomi/config/manager.go](file://plugins/mimusic-plugin-xiaomi/config/manager.go)
-- [plugins/mimusic-plugin-xiaomi/config/types.go](file://plugins/mimusic-plugin-xiaomi/config/types.go)
+- [plugins/songloft-plugin-xiaomi/config/manager.go](file://plugins/songloft-plugin-xiaomi/config/manager.go)
+- [plugins/songloft-plugin-xiaomi/config/types.go](file://plugins/songloft-plugin-xiaomi/config/types.go)
 
 章节来源
-- [plugins/mimusic-plugin-xiaomi/config/manager.go](file://plugins/mimusic-plugin-xiaomi/config/manager.go)
-- [plugins/mimusic-plugin-xiaomi/config/types.go](file://plugins/mimusic-plugin-xiaomi/config/types.go)
+- [plugins/songloft-plugin-xiaomi/config/manager.go](file://plugins/songloft-plugin-xiaomi/config/manager.go)
+- [plugins/songloft-plugin-xiaomi/config/types.go](file://plugins/songloft-plugin-xiaomi/config/types.go)
 
 ### 设备与 Mina 服务
 - 设备类型：抽象设备属性与能力，便于统一管理与扩展。
@@ -258,10 +258,10 @@ MinaService --> Device : "管理"
 ```
 
 图表来源
-- [plugins/mimusic-plugin-xiaomi/mina/types.go](file://plugins/mimusic-plugin-xiaomi/mina/types.go)
+- [plugins/songloft-plugin-xiaomi/mina/types.go](file://plugins/songloft-plugin-xiaomi/mina/types.go)
 
 章节来源
-- [plugins/mimusic-plugin-xiaomi/mina/types.go](file://plugins/mimusic-plugin-xiaomi/mina/types.go)
+- [plugins/songloft-plugin-xiaomi/mina/types.go](file://plugins/songloft-plugin-xiaomi/mina/types.go)
 
 ### 播放列表管理与播放器 URL 构建
 - 播放列表管理器：负责远程播放控制、设备间同步与状态管理，协调多设备播放一致性。
@@ -283,10 +283,10 @@ PlaylistManager --> URLBuilder : "构建播放 URL"
 ```
 
 图表来源
-- [plugins/mimusic-plugin-xiaomi/player/url_builder.go](file://plugins/mimusic-plugin-xiaomi/player/url_builder.go)
+- [plugins/songloft-plugin-xiaomi/player/url_builder.go](file://plugins/songloft-plugin-xiaomi/player/url_builder.go)
 
 章节来源
-- [plugins/mimusic-plugin-xiaomi/player/url_builder.go](file://plugins/mimusic-plugin-xiaomi/player/url_builder.go)
+- [plugins/songloft-plugin-xiaomi/player/url_builder.go](file://plugins/songloft-plugin-xiaomi/player/url_builder.go)
 
 ### HTTP 处理器与路由
 - 路由注册：插件通过统一的路由注册机制挂载到 /xiaomi 前缀下。
@@ -309,20 +309,20 @@ Router-->>Host : 返回响应
 图表来源
 - [internal/app/routers.go](file://internal/app/routers.go)
 - [plugin/api/plugin/static_handler.go](file://plugin/api/plugin/static_handler.go)
-- [plugins/mimusic-plugin-xiaomi/handlers/account_handler.go](file://plugins/mimusic-plugin-xiaomi/handlers/account_handler.go)
-- [plugins/mimusic-plugin-xiaomi/handlers/auth_handler.go](file://plugins/mimusic-plugin-xiaomi/handlers/auth_handler.go)
-- [plugins/mimusic-plugin-xiaomi/handlers/config_handler.go](file://plugins/mimusic-plugin-xiaomi/handlers/config_handler.go)
-- [plugins/mimusic-plugin-xiaomi/handlers/device_handler.go](file://plugins/mimusic-plugin-xiaomi/handlers/device_handler.go)
-- [plugins/mimusic-plugin-xiaomi/handlers/playlist_handler.go](file://plugins/mimusic-plugin-xiaomi/handlers/playlist_handler.go)
+- [plugins/songloft-plugin-xiaomi/handlers/account_handler.go](file://plugins/songloft-plugin-xiaomi/handlers/account_handler.go)
+- [plugins/songloft-plugin-xiaomi/handlers/auth_handler.go](file://plugins/songloft-plugin-xiaomi/handlers/auth_handler.go)
+- [plugins/songloft-plugin-xiaomi/handlers/config_handler.go](file://plugins/songloft-plugin-xiaomi/handlers/config_handler.go)
+- [plugins/songloft-plugin-xiaomi/handlers/device_handler.go](file://plugins/songloft-plugin-xiaomi/handlers/device_handler.go)
+- [plugins/songloft-plugin-xiaomi/handlers/playlist_handler.go](file://plugins/songloft-plugin-xiaomi/handlers/playlist_handler.go)
 
 章节来源
 - [internal/app/routers.go](file://internal/app/routers.go)
 - [plugin/api/plugin/static_handler.go](file://plugin/api/plugin/static_handler.go)
-- [plugins/mimusic-plugin-xiaomi/handlers/account_handler.go](file://plugins/mimusic-plugin-xiaomi/handlers/account_handler.go)
-- [plugins/mimusic-plugin-xiaomi/handlers/auth_handler.go](file://plugins/mimusic-plugin-xiaomi/handlers/auth_handler.go)
-- [plugins/mimusic-plugin-xiaomi/handlers/config_handler.go](file://plugins/mimusic-plugin-xiaomi/handlers/config_handler.go)
-- [plugins/mimusic-plugin-xiaomi/handlers/device_handler.go](file://plugins/mimusic-plugin-xiaomi/handlers/device_handler.go)
-- [plugins/mimusic-plugin-xiaomi/handlers/playlist_handler.go](file://plugins/mimusic-plugin-xiaomi/handlers/playlist_handler.go)
+- [plugins/songloft-plugin-xiaomi/handlers/account_handler.go](file://plugins/songloft-plugin-xiaomi/handlers/account_handler.go)
+- [plugins/songloft-plugin-xiaomi/handlers/auth_handler.go](file://plugins/songloft-plugin-xiaomi/handlers/auth_handler.go)
+- [plugins/songloft-plugin-xiaomi/handlers/config_handler.go](file://plugins/songloft-plugin-xiaomi/handlers/config_handler.go)
+- [plugins/songloft-plugin-xiaomi/handlers/device_handler.go](file://plugins/songloft-plugin-xiaomi/handlers/device_handler.go)
+- [plugins/songloft-plugin-xiaomi/handlers/playlist_handler.go](file://plugins/songloft-plugin-xiaomi/handlers/playlist_handler.go)
 
 ## 依赖关系分析
 - 插件入口与路由：插件通过 main.go 启动，结合内部路由器注册，形成统一的 API 入口。
@@ -331,7 +331,7 @@ Router-->>Host : 返回响应
 
 ```mermaid
 graph LR
-Main["plugins/mimusic-plugin-xiaomi/main.go"] --> Routers["internal/app/routers.go"]
+Main["plugins/songloft-plugin-xiaomi/main.go"] --> Routers["internal/app/routers.go"]
 Routers --> Handlers["handlers/*"]
 Handlers --> Account["account/*"]
 Handlers --> Auth["auth/*"]
@@ -342,12 +342,12 @@ Static["plugin/api/plugin/static_handler.go"] --> Frontend["static/*"]
 ```
 
 图表来源
-- [plugins/mimusic-plugin-xiaomi/main.go](file://plugins/mimusic-plugin-xiaomi/main.go)
+- [plugins/songloft-plugin-xiaomi/main.go](file://plugins/songloft-plugin-xiaomi/main.go)
 - [internal/app/routers.go](file://internal/app/routers.go)
 - [plugin/api/plugin/static_handler.go](file://plugin/api/plugin/static_handler.go)
 
 章节来源
-- [plugins/mimusic-plugin-xiaomi/main.go](file://plugins/mimusic-plugin-xiaomi/main.go)
+- [plugins/songloft-plugin-xiaomi/main.go](file://plugins/songloft-plugin-xiaomi/main.go)
 - [internal/app/routers.go](file://internal/app/routers.go)
 - [plugin/api/plugin/static_handler.go](file://plugin/api/plugin/static_handler.go)
 - [internal/models/models.go](file://internal/models/models.go)
@@ -375,9 +375,9 @@ Static["plugin/api/plugin/static_handler.go"] --> Frontend["static/*"]
 
 章节来源
 - [internal/app/routers.go](file://internal/app/routers.go)
-- [plugins/mimusic-plugin-xiaomi/auth/session.go](file://plugins/mimusic-plugin-xiaomi/auth/session.go)
-- [plugins/mimusic-plugin-xiaomi/mina/types.go](file://plugins/mimusic-plugin-xiaomi/mina/types.go)
-- [plugins/mimusic-plugin-xiaomi/player/url_builder.go](file://plugins/mimusic-plugin-xiaomi/player/url_builder.go)
+- [plugins/songloft-plugin-xiaomi/auth/session.go](file://plugins/songloft-plugin-xiaomi/auth/session.go)
+- [plugins/songloft-plugin-xiaomi/mina/types.go](file://plugins/songloft-plugin-xiaomi/mina/types.go)
+- [plugins/songloft-plugin-xiaomi/player/url_builder.go](file://plugins/songloft-plugin-xiaomi/player/url_builder.go)
 
 ## 结论
 Xiaomi 插件通过清晰的模块划分与统一的插件框架，实现了账户、认证、配置、设备与播放列表等核心能力。其架构具备良好的扩展性与可维护性，能够满足小米生态集成场景下的播放控制与状态同步需求。后续可在设备通信优化、播放队列一致性与前端交互体验方面持续改进。

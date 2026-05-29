@@ -28,7 +28,7 @@
 10. [附录](#附录)
 
 ## 简介
-本文档面向 MiMusic 的“歌单 CRUD 操作”，系统性梳理以下接口与模型：
+本文档面向 Songloft 的“歌单 CRUD 操作”，系统性梳理以下接口与模型：
 - ListPlaylists：获取歌单列表（支持类型过滤、分页）
 - GetPlaylist：获取单个歌单详情
 - CreatePlaylist：创建歌单
@@ -540,7 +540,7 @@ M --> C["internal/models/constant.go"]
 - [playlist_test.go:785-800](file://internal/handlers/playlist_test.go#L785-L800)
 
 ## 结论
-MiMusic 的歌单 CRUD 操作具备清晰的分层设计与完善的校验机制，支持类型约束、分页、批量操作与自动创建等功能。通过统一的鉴权与响应格式，前后端协作顺畅。建议在生产环境中：
+Songloft 的歌单 CRUD 操作具备清晰的分层设计与完善的校验机制，支持类型约束、分页、批量操作与自动创建等功能。通过统一的鉴权与响应格式，前后端协作顺畅。建议在生产环境中：
 - 严格遵循分页参数使用规范
 - 注意内置歌单保护策略
 - 在前端做好错误提示与重试策略

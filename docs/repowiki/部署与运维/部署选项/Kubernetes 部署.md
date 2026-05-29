@@ -25,7 +25,7 @@
 10. [附录](#附录)
 
 ## 简介
-本指南面向在 Kubernetes 中部署 MiMusic 的运维与开发者，提供从 Deployment、Service、ConfigMap、PersistentVolume 到 Ingress、Helm Chart 以及监控与日志的全栈实践建议。内容基于代码仓库中的容器镜像构建、应用启动流程、端口暴露、健康检查与配置管理能力进行设计，确保在集群中实现高可用、可滚动升级、可观测与可维护。
+本指南面向在 Kubernetes 中部署 Songloft 的运维与开发者，提供从 Deployment、Service、ConfigMap、PersistentVolume 到 Ingress、Helm Chart 以及监控与日志的全栈实践建议。内容基于代码仓库中的容器镜像构建、应用启动流程、端口暴露、健康检查与配置管理能力进行设计，确保在集群中实现高可用、可滚动升级、可观测与可维护。
 
 ## 项目结构
 - 容器镜像与入口脚本
@@ -105,7 +105,7 @@ APP --> CS
 - [internal/services/config_service.go:15-198](file://internal/services/config_service.go#L15-L198)
 
 ## 架构总览
-下图展示 MiMusic 在 Kubernetes 中的典型部署形态：Deployment 管理 Pod 副本与滚动更新；Service 对外暴露；Ingress 接收外部流量；ConfigMap 管理配置；PersistentVolumeClaim 提供持久化存储。
+下图展示 Songloft 在 Kubernetes 中的典型部署形态：Deployment 管理 Pod 副本与滚动更新；Service 对外暴露；Ingress 接收外部流量；ConfigMap 管理配置；PersistentVolumeClaim 提供持久化存储。
 
 ```mermaid
 graph TB
@@ -223,7 +223,7 @@ POD -. 指标/日志 .-> ELK
 ```mermaid
 sequenceDiagram
 participant Kubelet as "Kubelet"
-participant Pod as "MiMusic Pod"
+participant Pod as "Songloft Pod"
 participant App as "应用进程"
 participant Handler as "健康检查处理器"
 Kubelet->>Pod : "执行探针"
@@ -298,7 +298,7 @@ KUBE["K8s 探针"] --> HEALTH
 - [internal/services/config_service.go:114-139](file://internal/services/config_service.go#L114-L139)
 
 ## 结论
-通过将 MiMusic 的容器化能力与 Kubernetes 的编排优势结合，可以实现高可用、可扩展且可观测的音乐服务。建议以 ConfigMap 管理配置、以 PVC 提供持久化、以 Ingress 实现外部访问，并通过 Helm 实现模板化与版本化管理。配合 Prometheus/Grafana 与 ELK，形成完善的监控与日志体系，保障线上稳定运行。
+通过将 Songloft 的容器化能力与 Kubernetes 的编排优势结合，可以实现高可用、可扩展且可观测的音乐服务。建议以 ConfigMap 管理配置、以 PVC 提供持久化、以 Ingress 实现外部访问，并通过 Helm 实现模板化与版本化管理。配合 Prometheus/Grafana 与 ELK，形成完善的监控与日志体系，保障线上稳定运行。
 
 [本节为总结性内容，不直接分析具体源文件，故不提供“章节来源”]
 

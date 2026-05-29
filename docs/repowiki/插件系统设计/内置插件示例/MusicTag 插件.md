@@ -2,17 +2,17 @@
 
 <cite>
 **本文引用的文件**
-- [main.go](file://plugins/mimusic-plugin-musictag/main.go)
-- [manager.go](file://plugins/mimusic-plugin-musictag/scraper/manager.go)
-- [matcher.go](file://plugins/mimusic-plugin-musictag/scraper/matcher.go)
-- [types.go](file://plugins/mimusic-plugin-musictag/scraper/types.go)
-- [utils.go](file://plugins/mimusic-plugin-musictag/scraper/utils.go)
-- [scraper.go](file://plugins/mimusic-plugin-musictag/handlers/scraper.go)
-- [go.mod](file://plugins/mimusic-plugin-musictag/go.mod)
-- [plugin.go](file://mimusic-plugin/api/plugin/plugin.go)
-- [router.go](file://mimusic-plugin/api/plugin/router.go)
-- [response.go](file://mimusic-plugin/api/plugin/response.go)
-- [base.go](file://mimusic-plugin/api/plugin/base.go)
+- [main.go](file://plugins/songloft-plugin-musictag/main.go)
+- [manager.go](file://plugins/songloft-plugin-musictag/scraper/manager.go)
+- [matcher.go](file://plugins/songloft-plugin-musictag/scraper/matcher.go)
+- [types.go](file://plugins/songloft-plugin-musictag/scraper/types.go)
+- [utils.go](file://plugins/songloft-plugin-musictag/scraper/utils.go)
+- [scraper.go](file://plugins/songloft-plugin-musictag/handlers/scraper.go)
+- [go.mod](file://plugins/songloft-plugin-musictag/go.mod)
+- [plugin.go](file://songloft-plugin/api/plugin/plugin.go)
+- [router.go](file://songloft-plugin/api/plugin/router.go)
+- [response.go](file://songloft-plugin/api/plugin/response.go)
+- [base.go](file://songloft-plugin/api/plugin/base.go)
 - [manager.go](file://internal/plugins/manager.go)
 - [host.go](file://internal/plugins/host.go)
 - [plugin.go](file://internal/plugins/plugin.go)
@@ -42,14 +42,14 @@
 10. [附录](#附录)
 
 ## 简介
-本文件为 MusicTag 插件的实现文档，聚焦 mimusic-plugin-musictag 插件在音频元数据抓取与匹配方面的设计与实现。文档从系统架构、组件职责、数据流、匹配算法、数据清洗与去重、缓存策略以及与宿主应用音乐库的集成与同步等方面进行全面剖析，并通过图示展示关键流程与类关系，帮助开发者快速理解与扩展该插件。
+本文件为 MusicTag 插件的实现文档，聚焦 songloft-plugin-musictag 插件在音频元数据抓取与匹配方面的设计与实现。文档从系统架构、组件职责、数据流、匹配算法、数据清洗与去重、缓存策略以及与宿主应用音乐库的集成与同步等方面进行全面剖析，并通过图示展示关键流程与类关系，帮助开发者快速理解与扩展该插件。
 
 ## 项目结构
-MusicTag 插件位于 plugins/mimusic-plugin-musictag 目录下，采用 Go 语言实现，遵循 mimusic 插件框架规范。其核心目录与文件如下：
+MusicTag 插件位于 plugins/songloft-plugin-musictag 目录下，采用 Go 语言实现，遵循 songloft 插件框架规范。其核心目录与文件如下：
 - 插件入口：main.go
 - 抓取器与匹配器：scraper/manager.go、scraper/matcher.go、scraper/types.go、scraper/utils.go
 - 处理器：handlers/scraper.go
-- 插件框架适配：mimusic-plugin/api/plugin/*.go
+- 插件框架适配：songloft-plugin/api/plugin/*.go
 - 宿主应用集成：internal/plugins/*（插件管理）、internal/services/*（服务层）、internal/database/*（数据库）
 
 ```mermaid
@@ -96,16 +96,16 @@ SvcSong --> DB
 ```
 
 **图表来源**
-- [main.go](file://plugins/mimusic-plugin-musictag/main.go)
-- [manager.go](file://plugins/mimusic-plugin-musictag/scraper/manager.go)
-- [matcher.go](file://plugins/mimusic-plugin-musictag/scraper/matcher.go)
-- [types.go](file://plugins/mimusic-plugin-musictag/scraper/types.go)
-- [utils.go](file://plugins/mimusic-plugin-musictag/scraper/utils.go)
-- [scraper.go](file://plugins/mimusic-plugin-musictag/handlers/scraper.go)
-- [base.go](file://mimusic-plugin/api/plugin/base.go)
-- [router.go](file://mimusic-plugin/api/plugin/router.go)
-- [response.go](file://mimusic-plugin/api/plugin/response.go)
-- [plugin.go](file://mimusic-plugin/api/plugin/plugin.go)
+- [main.go](file://plugins/songloft-plugin-musictag/main.go)
+- [manager.go](file://plugins/songloft-plugin-musictag/scraper/manager.go)
+- [matcher.go](file://plugins/songloft-plugin-musictag/scraper/matcher.go)
+- [types.go](file://plugins/songloft-plugin-musictag/scraper/types.go)
+- [utils.go](file://plugins/songloft-plugin-musictag/scraper/utils.go)
+- [scraper.go](file://plugins/songloft-plugin-musictag/handlers/scraper.go)
+- [base.go](file://songloft-plugin/api/plugin/base.go)
+- [router.go](file://songloft-plugin/api/plugin/router.go)
+- [response.go](file://songloft-plugin/api/plugin/response.go)
+- [plugin.go](file://songloft-plugin/api/plugin/plugin.go)
 - [manager.go](file://internal/plugins/manager.go)
 - [repository.go](file://internal/plugins/repository.go)
 - [plugin.go](file://internal/plugins/plugin.go)
@@ -115,8 +115,8 @@ SvcSong --> DB
 - [sqlite_song.go](file://internal/database/sqlite_song.go)
 
 **章节来源**
-- [main.go](file://plugins/mimusic-plugin-musictag/main.go)
-- [go.mod](file://plugins/mimusic-plugin-musictag/go.mod)
+- [main.go](file://plugins/songloft-plugin-musictag/main.go)
+- [go.mod](file://plugins/songloft-plugin-musictag/go.mod)
 
 ## 核心组件
 - 抓取器管理器：负责协调多平台数据源抓取、请求调度、并发控制与错误恢复。
@@ -127,11 +127,11 @@ SvcSong --> DB
 - 宿主集成：通过插件管理器与服务层对接，写入/更新音乐库元数据。
 
 **章节来源**
-- [manager.go](file://plugins/mimusic-plugin-musictag/scraper/manager.go)
-- [matcher.go](file://plugins/mimusic-plugin-musictag/scraper/matcher.go)
-- [types.go](file://plugins/mimusic-plugin-musictag/scraper/types.go)
-- [utils.go](file://plugins/mimusic-plugin-musictag/scraper/utils.go)
-- [scraper.go](file://plugins/mimusic-plugin-musictag/handlers/scraper.go)
+- [manager.go](file://plugins/songloft-plugin-musictag/scraper/manager.go)
+- [matcher.go](file://plugins/songloft-plugin-musictag/scraper/matcher.go)
+- [types.go](file://plugins/songloft-plugin-musictag/scraper/types.go)
+- [utils.go](file://plugins/songloft-plugin-musictag/scraper/utils.go)
+- [scraper.go](file://plugins/songloft-plugin-musictag/handlers/scraper.go)
 
 ## 架构总览
 MusicTag 插件采用“处理器-抓取器-匹配器”三层结构：
@@ -158,9 +158,9 @@ Handler->>Host : "写入/更新元数据"
 ```
 
 **图表来源**
-- [scraper.go](file://plugins/mimusic-plugin-musictag/handlers/scraper.go)
-- [manager.go](file://plugins/mimusic-plugin-musictag/scraper/manager.go)
-- [matcher.go](file://plugins/mimusic-plugin-musictag/scraper/matcher.go)
+- [scraper.go](file://plugins/songloft-plugin-musictag/handlers/scraper.go)
+- [manager.go](file://plugins/songloft-plugin-musictag/scraper/manager.go)
+- [matcher.go](file://plugins/songloft-plugin-musictag/scraper/matcher.go)
 - [song_service.go](file://internal/services/song_service.go)
 
 ## 详细组件分析
@@ -193,10 +193,10 @@ Err --> Done
 ```
 
 **图表来源**
-- [manager.go](file://plugins/mimusic-plugin-musictag/scraper/manager.go)
+- [manager.go](file://plugins/songloft-plugin-musictag/scraper/manager.go)
 
 **章节来源**
-- [manager.go](file://plugins/mimusic-plugin-musictag/scraper/manager.go)
+- [manager.go](file://plugins/songloft-plugin-musictag/scraper/manager.go)
 
 ### 匹配器（评分与筛选）
 - 职责
@@ -225,12 +225,12 @@ Drop --> Out
 ```
 
 **图表来源**
-- [matcher.go](file://plugins/mimusic-plugin-musictag/scraper/matcher.go)
-- [utils.go](file://plugins/mimusic-plugin-musictag/scraper/utils.go)
+- [matcher.go](file://plugins/songloft-plugin-musictag/scraper/matcher.go)
+- [utils.go](file://plugins/songloft-plugin-musictag/scraper/utils.go)
 
 **章节来源**
-- [matcher.go](file://plugins/mimusic-plugin-musictag/scraper/matcher.go)
-- [utils.go](file://plugins/mimusic-plugin-musictag/scraper/utils.go)
+- [matcher.go](file://plugins/songloft-plugin-musictag/scraper/matcher.go)
+- [utils.go](file://plugins/songloft-plugin-musictag/scraper/utils.go)
 
 ### 类型与数据模型
 - 统一字段
@@ -269,10 +269,10 @@ MatchResult --> Candidate : "候选列表"
 ```
 
 **图表来源**
-- [types.go](file://plugins/mimusic-plugin-musictag/scraper/types.go)
+- [types.go](file://plugins/songloft-plugin-musictag/scraper/types.go)
 
 **章节来源**
-- [types.go](file://plugins/mimusic-plugin-musictag/scraper/types.go)
+- [types.go](file://plugins/songloft-plugin-musictag/scraper/types.go)
 
 ### HTTP 处理器（接口与响应）
 - 路由
@@ -300,13 +300,13 @@ R-->>C : "返回JSON"
 ```
 
 **图表来源**
-- [scraper.go](file://plugins/mimusic-plugin-musictag/handlers/scraper.go)
-- [base.go](file://mimusic-plugin/api/plugin/base.go)
-- [response.go](file://mimusic-plugin/api/plugin/response.go)
-- [router.go](file://mimusic-plugin/api/plugin/router.go)
+- [scraper.go](file://plugins/songloft-plugin-musictag/handlers/scraper.go)
+- [base.go](file://songloft-plugin/api/plugin/base.go)
+- [response.go](file://songloft-plugin/api/plugin/response.go)
+- [router.go](file://songloft-plugin/api/plugin/router.go)
 
 **章节来源**
-- [scraper.go](file://plugins/mimusic-plugin-musictag/handlers/scraper.go)
+- [scraper.go](file://plugins/songloft-plugin-musictag/handlers/scraper.go)
 
 ### 插件框架适配
 - 注册路由与中间件，确保处理器可被宿主发现。
@@ -314,9 +314,9 @@ R-->>C : "返回JSON"
 - 错误处理：统一捕获异常并转换为标准响应。
 
 **章节来源**
-- [plugin.go](file://mimusic-plugin/api/plugin/plugin.go)
-- [router.go](file://mimusic-plugin/api/plugin/router.go)
-- [response.go](file://mimusic-plugin/api/plugin/response.go)
+- [plugin.go](file://songloft-plugin/api/plugin/plugin.go)
+- [router.go](file://songloft-plugin/api/plugin/router.go)
+- [response.go](file://songloft-plugin/api/plugin/response.go)
 
 ### 与宿主应用的集成与同步
 - 插件管理器
@@ -372,7 +372,7 @@ Scanner --> PMeta
 ```mermaid
 graph TB
 subgraph "插件"
-P["mimusic-plugin-musictag"]
+P["songloft-plugin-musictag"]
 F["mimetic 插件框架"]
 end
 subgraph "宿主"
@@ -387,11 +387,11 @@ S --> D
 ```
 
 **图表来源**
-- [go.mod](file://plugins/mimusic-plugin-musictag/go.mod)
+- [go.mod](file://plugins/songloft-plugin-musictag/go.mod)
 - [go.mod](file://go.mod)
 
 **章节来源**
-- [go.mod](file://plugins/mimusic-plugin-musictag/go.mod)
+- [go.mod](file://plugins/songloft-plugin-musictag/go.mod)
 - [go.mod](file://go.mod)
 
 ## 性能考量
@@ -421,8 +421,8 @@ S --> D
   - 优化数据库索引与查询计划，减少写入延迟。
 
 **章节来源**
-- [manager.go](file://plugins/mimusic-plugin-musictag/scraper/manager.go)
-- [matcher.go](file://plugins/mimusic-plugin-musictag/scraper/matcher.go)
+- [manager.go](file://plugins/songloft-plugin-musictag/scraper/manager.go)
+- [matcher.go](file://plugins/songloft-plugin-musictag/scraper/matcher.go)
 - [sqlite_song.go](file://internal/database/sqlite_song.go)
 
 ## 结论

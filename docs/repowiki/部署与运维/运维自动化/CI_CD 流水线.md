@@ -48,7 +48,7 @@
 11. [附录](#附录)
 
 ## 简介
-本文件面向 MiMusic 的 CI/CD 流水线，系统性梳理并解读以下工作流的配置与实现细节：
+本文件面向 Songloft 的 CI/CD 流水线，系统性梳理并解读以下工作流的配置与实现细节：
 - 构建与容器化工作流：build-and-docker.yml
 - 测试工作流：test.yml
 - 代码质量检查工作流：lint.yml
@@ -401,7 +401,7 @@ REL-->>TRIG : 生成 checksums + 创建 Release
 ## 硬件兼容性配置
 
 ### GOAMD64 指令集支持
-MiMusic 项目通过以下方式确保硬件兼容性：
+Songloft 项目通过以下方式确保硬件兼容性：
 
 #### 构建系统中的 GOAMD64 配置
 - **Makefile 中的全局设置**：`GO=CGO_ENABLED=0 GOAMD64=v1 go`
