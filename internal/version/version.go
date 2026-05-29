@@ -5,7 +5,7 @@ var (
 	Version   = "dev"
 	GitCommit = "unknown"
 	BuildTime = "unknown"
-	BuildType = "" // 构建类型，"full" 或 ""（默认 lite）
+	BuildType = "" // 构建类型，"lite" 或 ""（默认 full）
 )
 
 // GetVersion 返回完整的版本信息

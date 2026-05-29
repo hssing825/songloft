@@ -64,10 +64,10 @@ Songloft 提供两种版本，满足不同使用场景：
 
 | 版本 | 后缀 | 说明 | 适用场景 |
 |------|------|------|----------|
-| 🌟 **完整版** | `-full` | 包含 Web 前端，开箱即用 | 推荐初次使用，访问服务地址即可看到 Web 界面 |
-| 📦 **精简版** | 无后缀 | 不包含 Web 前端，体积更小 | 配合 Flutter 桌面/移动客户端，或前后端分离部署 |
+| 🌟 **完整版** | 无后缀 | 包含 Web 前端，开箱即用 | 推荐初次使用，访问服务地址即可看到 Web 界面 |
+| 📦 **精简版** | `-lite` | 不包含 Web 前端，体积更小 | 配合 Flutter 桌面/移动客户端，或前后端分离部署 |
 
-> 💡 **推荐**：初次使用建议下载 **完整版（-full）**，开箱即用，无需额外配置前端。
+> 💡 **推荐**：初次使用直接下载默认的 **完整版**，开箱即用，无需额外配置前端。
 
 ## 🖥️ 平台支持
 
@@ -79,20 +79,6 @@ Songloft 提供两种版本，满足不同使用场景：
 
 | 平台 | 架构 | 下载链接 |
 |------|------|--------|
-| 🐧 Linux | x86_64 | [songloft-linux-amd64-full](https://github.com/songloft-org/songloft/releases/latest/download/songloft-linux-amd64-full) |
-| 🐧 Linux | ARM64 | [songloft-linux-arm64-full](https://github.com/songloft-org/songloft/releases/latest/download/songloft-linux-arm64-full) |
-| 🐧 Linux | ARMv7 | [songloft-linux-armv7-full](https://github.com/songloft-org/songloft/releases/latest/download/songloft-linux-armv7-full) |
-| 🍎 macOS | x86_64 (Intel) | [songloft-darwin-amd64-full](https://github.com/songloft-org/songloft/releases/latest/download/songloft-darwin-amd64-full) |
-| 🍎 macOS | ARM64 (Apple Silicon) | [songloft-darwin-arm64-full](https://github.com/songloft-org/songloft/releases/latest/download/songloft-darwin-arm64-full) |
-| 🪟 Windows | x86_64 | [songloft-windows-amd64-full.exe](https://github.com/songloft-org/songloft/releases/latest/download/songloft-windows-amd64-full.exe) |
-| 🪟 Windows | ARM64 | [songloft-windows-arm64-full.exe](https://github.com/songloft-org/songloft/releases/latest/download/songloft-windows-arm64-full.exe) |
-
-#### 📦 精简版（Lite）
-
-不包含 Web 前端，体积更小：
-
-| 平台 | 架构 | 下载链接 |
-|------|------|--------|
 | 🐧 Linux | x86_64 | [songloft-linux-amd64](https://github.com/songloft-org/songloft/releases/latest/download/songloft-linux-amd64) |
 | 🐧 Linux | ARM64 | [songloft-linux-arm64](https://github.com/songloft-org/songloft/releases/latest/download/songloft-linux-arm64) |
 | 🐧 Linux | ARMv7 | [songloft-linux-armv7](https://github.com/songloft-org/songloft/releases/latest/download/songloft-linux-armv7) |
@@ -101,23 +87,37 @@ Songloft 提供两种版本，满足不同使用场景：
 | 🪟 Windows | x86_64 | [songloft-windows-amd64.exe](https://github.com/songloft-org/songloft/releases/latest/download/songloft-windows-amd64.exe) |
 | 🪟 Windows | ARM64 | [songloft-windows-arm64.exe](https://github.com/songloft-org/songloft/releases/latest/download/songloft-windows-arm64.exe) |
 
+#### 📦 精简版（Lite）
+
+不包含 Web 前端，体积更小：
+
+| 平台 | 架构 | 下载链接 |
+|------|------|--------|
+| 🐧 Linux | x86_64 | [songloft-linux-amd64-lite](https://github.com/songloft-org/songloft/releases/latest/download/songloft-linux-amd64-lite) |
+| 🐧 Linux | ARM64 | [songloft-linux-arm64-lite](https://github.com/songloft-org/songloft/releases/latest/download/songloft-linux-arm64-lite) |
+| 🐧 Linux | ARMv7 | [songloft-linux-armv7-lite](https://github.com/songloft-org/songloft/releases/latest/download/songloft-linux-armv7-lite) |
+| 🍎 macOS | x86_64 (Intel) | [songloft-darwin-amd64-lite](https://github.com/songloft-org/songloft/releases/latest/download/songloft-darwin-amd64-lite) |
+| 🍎 macOS | ARM64 (Apple Silicon) | [songloft-darwin-arm64-lite](https://github.com/songloft-org/songloft/releases/latest/download/songloft-darwin-arm64-lite) |
+| 🪟 Windows | x86_64 | [songloft-windows-amd64-lite.exe](https://github.com/songloft-org/songloft/releases/latest/download/songloft-windows-amd64-lite.exe) |
+| 🪟 Windows | ARM64 | [songloft-windows-arm64-lite.exe](https://github.com/songloft-org/songloft/releases/latest/download/songloft-windows-arm64-lite.exe) |
+
 ### 🐳 Docker 镜像
 
 #### 🌟 完整版（推荐）
 
 | 平台 | 下载链接 |
 |------|--------|
-| 🐧 Linux x86_64 | [songloft-docker-linux-amd64-full.tar](https://github.com/songloft-org/songloft/releases/latest/download/songloft-docker-linux-amd64-full.tar) |
-| 🐧 Linux ARM64 | [songloft-docker-linux-arm64-full.tar](https://github.com/songloft-org/songloft/releases/latest/download/songloft-docker-linux-arm64-full.tar) |
-| 🐧 Linux ARMv7 | [songloft-docker-linux-armv7-full.tar](https://github.com/songloft-org/songloft/releases/latest/download/songloft-docker-linux-armv7-full.tar) |
+| 🐧 Linux x86_64 | [songloft-docker-linux-amd64.tar](https://github.com/songloft-org/songloft/releases/latest/download/songloft-docker-linux-amd64.tar) |
+| 🐧 Linux ARM64 | [songloft-docker-linux-arm64.tar](https://github.com/songloft-org/songloft/releases/latest/download/songloft-docker-linux-arm64.tar) |
+| 🐧 Linux ARMv7 | [songloft-docker-linux-arm-v7.tar](https://github.com/songloft-org/songloft/releases/latest/download/songloft-docker-linux-arm-v7.tar) |
 
 #### 📦 精简版（Lite）
 
 | 平台 | 下载链接 |
 |------|--------|
-| 🐧 Linux x86_64 | [songloft-docker-linux-amd64.tar](https://github.com/songloft-org/songloft/releases/latest/download/songloft-docker-linux-amd64.tar) |
-| 🐧 Linux ARM64 | [songloft-docker-linux-arm64.tar](https://github.com/songloft-org/songloft/releases/latest/download/songloft-docker-linux-arm64.tar) |
-| 🐧 Linux ARMv7 | [songloft-docker-linux-armv7.tar](https://github.com/songloft-org/songloft/releases/latest/download/songloft-docker-linux-armv7.tar) |
+| 🐧 Linux x86_64 | [songloft-docker-linux-amd64-lite.tar](https://github.com/songloft-org/songloft/releases/latest/download/songloft-docker-linux-amd64-lite.tar) |
+| 🐧 Linux ARM64 | [songloft-docker-linux-arm64-lite.tar](https://github.com/songloft-org/songloft/releases/latest/download/songloft-docker-linux-arm64-lite.tar) |
+| 🐧 Linux ARMv7 | [songloft-docker-linux-arm-v7-lite.tar](https://github.com/songloft-org/songloft/releases/latest/download/songloft-docker-linux-arm-v7-lite.tar) |
 
 ### 📱 Flutter 客户端
 
@@ -126,7 +126,7 @@ Songloft 提供两种版本，满足不同使用场景：
 🔗 **GitHub 仓库**：[songloft-org/songloft-player](https://github.com/songloft-org/songloft-player)
 📥 **下载**：[GitHub Releases](https://github.com/songloft-org/songloft-player/releases/latest)
 
-> 💡 使用 **精简版** 服务端时，推荐直接搭配 Flutter 客户端使用（无需额外部署 Web 前端）；如确实需要独立 Web 前端，可参考 [songloft-player](https://github.com/songloft-org/songloft-player) 仓库的 `flutter build web` 流程自行构建并由 Nginx 等反向代理静态托管。
+> 💡 使用 **精简版（-lite）** 服务端时，推荐直接搭配 Flutter 客户端使用（无需额外部署 Web 前端）；如确实需要独立 Web 前端，可参考 [songloft-player](https://github.com/songloft-org/songloft-player) 仓库的 `flutter build web` 流程自行构建并由 Nginx 等反向代理静态托管。
 
 ## 🚀 快速开始
 
@@ -137,10 +137,10 @@ Songloft 提供两种版本，满足不同使用场景：
 #### 🐧 Linux / 🍎 macOS
 
 ```bash
-# 1️⃣ 下载对应平台的二进制文件（推荐完整版）
-# 例如 Linux x86_64 完整版:
-wget https://github.com/songloft-org/songloft/releases/latest/download/songloft-linux-amd64-full
-mv songloft-linux-amd64-full songloft
+# 1️⃣ 下载对应平台的二进制文件（默认即完整版）
+# 例如 Linux x86_64:
+wget https://github.com/songloft-org/songloft/releases/latest/download/songloft-linux-amd64
+mv songloft-linux-amd64 songloft
 
 # 2️⃣ 添加执行权限
 chmod +x songloft
@@ -160,8 +160,8 @@ ADMIN_USERNAME=admin ADMIN_PASSWORD='your_strong_password' ./songloft
 #### 🪟 Windows
 
 ```powershell
-# 1️⃣ 下载对应平台的二进制文件（推荐完整版），并重命名为 songloft.exe
-# 例如 Windows x86_64 完整版: songloft-windows-amd64-full.exe
+# 1️⃣ 下载对应平台的二进制文件（默认即完整版），并重命名为 songloft.exe
+# 例如 Windows x86_64: songloft-windows-amd64.exe
 
 # 2️⃣ 创建必要目录
 mkdir music
@@ -175,20 +175,18 @@ $env:ADMIN_PASSWORD = "your_strong_password"
 
 ### 🐳 方式二：Docker 部署
 
-> ⚠️ **镜像标签提醒**：`songloft/songloft:latest` 是 **精简版**（不含 Web 前端）。如需开箱即用的 Web 界面，请使用 `songloft/songloft:full` 或 `songloft/songloft:<version>-full`。
-
 #### 🌐 从 Docker Hub 拉取（推荐）
 
 ```bash
-# 🌟 完整版（推荐，包含 Web 前端）
-docker pull songloft/songloft:full
-# 或指定版本: docker pull songloft/songloft:1.4.1-full
-
-# 📦 精简版（不含 Web 前端，需搭配 Flutter 客户端使用）
+# 🌟 完整版（推荐，包含 Web 前端，:latest 即完整版）
 docker pull songloft/songloft:latest
 # 或指定版本: docker pull songloft/songloft:1.4.1
 
-# 运行容器（以完整版为例）
+# 📦 精简版（不含 Web 前端，需搭配 Flutter 客户端使用）
+docker pull songloft/songloft:lite
+# 或指定版本: docker pull songloft/songloft:1.4.1-lite
+
+# 运行容器
 docker run -d \
   --name songloft \
   -p 58091:58091 \
@@ -196,7 +194,7 @@ docker run -d \
   -v /path/to/data:/app/data \
   -e ADMIN_USERNAME=admin \
   -e ADMIN_PASSWORD='your_strong_password' \
-  songloft/songloft:full
+  songloft/songloft:latest
 ```
 
 #### 📥 从 Release 离线导入镜像
@@ -204,11 +202,11 @@ docker run -d \
 适合无法直接访问 Docker Hub 的环境：
 
 ```bash
-# 1️⃣ 下载对应平台的 Docker 镜像 tar 文件（推荐完整版）
-wget https://github.com/songloft-org/songloft/releases/latest/download/songloft-docker-linux-amd64-full.tar
+# 1️⃣ 下载对应平台的 Docker 镜像 tar 文件（默认即完整版）
+wget https://github.com/songloft-org/songloft/releases/latest/download/songloft-docker-linux-amd64.tar
 
 # 2️⃣ 导入镜像
-docker load -i songloft-docker-linux-amd64-full.tar
+docker load -i songloft-docker-linux-amd64.tar
 
 # 3️⃣ 查看导入的镜像标签
 docker images | grep songloft
@@ -225,7 +223,7 @@ version: '3.8'
 
 services:
   songloft:
-    image: songloft/songloft:full
+    image: songloft/songloft:latest
     container_name: songloft
     restart: always
     ports:
@@ -348,7 +346,7 @@ curl http://localhost:58091/api/v1/version
 Songloft Version: 1.4.1
 Git Commit: c8f3171
 Build Time: 2026-05-28_13:46:11
-Build Type: lite
+Build Type: full
 ```
 
 ## 🔌 插件系统

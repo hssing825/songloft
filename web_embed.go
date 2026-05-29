@@ -1,4 +1,4 @@
-//go:build !full
+//go:build !lite
 
 package main
 
@@ -6,5 +6,5 @@ import (
 	"embed"
 )
 
-// WebDist 轻量版本使用空 embed.FS
+//go:embed all:songloft-player-build/web-embedded
 var WebDist embed.FS

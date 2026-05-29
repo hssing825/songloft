@@ -182,21 +182,21 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq upx
 
-      - name: Build binaries (lite + full)
+      - name: Build binaries (full + lite)
         env:
           VERSION: ${{ needs.prepare.outputs.version }}
         run: |
           SUFFIX="${{ matrix.suffix }}"
           EXT="${{ matrix.ext }}"
 
-          # 构建 lite 版本（复用 Makefile build-cross 目标，含 UPX 压缩）
+          # 构建完整版（默认，不需要额外 tags）
           make build-cross GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} \
             GOARM=${{ matrix.goarm }} OUTPUT="songloft-${SUFFIX}${EXT}"
 
-          # 构建 full 版本（BUILD_TYPE=full 让 songloft version 输出带 full 标识，与 Dockerfile 一致）
+          # 构建 lite 版本（BUILD_TYPE=lite 让 songloft -version 输出 lite 标识）
           make build-cross GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} \
-            GOARM=${{ matrix.goarm }} OUTPUT="songloft-${SUFFIX}-full${EXT}" \
-            EXTRA_TAGS=full BUILD_TYPE=full
+            GOARM=${{ matrix.goarm }} OUTPUT="songloft-${SUFFIX}-lite${EXT}" \
+            EXTRA_TAGS=lite BUILD_TYPE=lite
 
           ls -lh songloft-${SUFFIX}*
 
@@ -224,7 +224,7 @@ jobs:
           name: binary-${{ matrix.suffix }}
           path: |
             songloft-${{ matrix.suffix }}${{ matrix.ext }}
-            songloft-${{ matrix.suffix }}-full${{ matrix.ext }}
+            songloft-${{ matrix.suffix }}-lite${{ matrix.ext }}
             version.json
           retention-days: 1
 
@@ -278,102 +278,32 @@ jobs:
           echo "GIT_COMMIT=${GIT_COMMIT}" >> $GITHUB_OUTPUT
           echo "BUILD_TIME=${BUILD_TIME}" >> $GITHUB_OUTPUT
 
-          # 计算 Docker 标签
+          # 计算 Docker 标签（默认 = 完整版，-lite = 精简版）
           if [[ "${IS_PRERELEASE}" == "false" ]]; then
-            # tag 触发：版本号 + latest / full
-            LITE_TAGS="${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${VERSION_TAG},${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest"
-            FULL_TAGS="${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${VERSION_TAG}-full,${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:full"
+            # tag 触发：完整版用 :版本号 + :latest，精简版用 :版本号-lite + :lite
+            FULL_TAGS="${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${VERSION_TAG},${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:latest"
+            LITE_TAGS="${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${VERSION_TAG}-lite,${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:lite"
           else
-            # 分支 push / dispatch：仅打分支名标签（main → :main / :main-full）
-            LITE_TAGS="${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${VERSION_TAG}"
-            FULL_TAGS="${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${VERSION_TAG}-full"
+            # dispatch：仅打分支名标签
+            FULL_TAGS="${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${VERSION_TAG}"
+            LITE_TAGS="${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:${VERSION_TAG}-lite"
           fi
 
-          echo "LITE_TAGS=${LITE_TAGS}" >> $GITHUB_OUTPUT
           echo "FULL_TAGS=${FULL_TAGS}" >> $GITHUB_OUTPUT
-          echo "Lite tags: ${LITE_TAGS}"
+          echo "LITE_TAGS=${LITE_TAGS}" >> $GITHUB_OUTPUT
           echo "Full tags: ${FULL_TAGS}"
+          echo "Lite tags: ${LITE_TAGS}"
 
       - name: Create output directory
         run: mkdir -p docker-tars
 
-      # ---------- 逐平台构建 lite 版本并导出 tar（写 GHA cache，下面 manifest 步骤复用）----------
-      - name: Build & save lite linux/amd64
-        run: |
-          docker buildx build \
-            --build-arg VERSION="${{ needs.prepare.outputs.version }}" \
-            --build-arg GIT_COMMIT="${{ steps.meta.outputs.GIT_COMMIT }}" \
-            --build-arg BUILD_TIME="${{ steps.meta.outputs.BUILD_TIME }}" \
-            --platform linux/amd64 \
-            --tag ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:tmp-lite-amd64 \
-            --cache-from type=gha,scope=lite-linux-amd64 \
-            --cache-to type=gha,scope=lite-linux-amd64,mode=max \
-            --load \
-            .
-          docker save ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:tmp-lite-amd64 \
-            -o docker-tars/songloft-docker-linux-amd64.tar
-          docker rmi ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:tmp-lite-amd64 2>/dev/null || true
-
-      - name: Build & save lite linux/arm64
-        run: |
-          docker buildx build \
-            --build-arg VERSION="${{ needs.prepare.outputs.version }}" \
-            --build-arg GIT_COMMIT="${{ steps.meta.outputs.GIT_COMMIT }}" \
-            --build-arg BUILD_TIME="${{ steps.meta.outputs.BUILD_TIME }}" \
-            --platform linux/arm64 \
-            --tag ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:tmp-lite-arm64 \
-            --cache-from type=gha,scope=lite-linux-arm64 \
-            --cache-to type=gha,scope=lite-linux-arm64,mode=max \
-            --load \
-            .
-          docker save ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:tmp-lite-arm64 \
-            -o docker-tars/songloft-docker-linux-arm64.tar
-          docker rmi ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:tmp-lite-arm64 2>/dev/null || true
-
-      - name: Build & save lite linux/arm/v7
-        run: |
-          docker buildx build \
-            --build-arg VERSION="${{ needs.prepare.outputs.version }}" \
-            --build-arg GIT_COMMIT="${{ steps.meta.outputs.GIT_COMMIT }}" \
-            --build-arg BUILD_TIME="${{ steps.meta.outputs.BUILD_TIME }}" \
-            --platform linux/arm/v7 \
-            --tag ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:tmp-lite-armv7 \
-            --cache-from type=gha,scope=lite-linux-armv7 \
-            --cache-to type=gha,scope=lite-linux-armv7,mode=max \
-            --load \
-            .
-          docker save ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:tmp-lite-armv7 \
-            -o docker-tars/songloft-docker-linux-arm-v7.tar
-          docker rmi ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:tmp-lite-armv7 2>/dev/null || true
-
-      # ---------- 推送 lite 多架构 manifest（命中上面的 GHA cache，无需重新编译）----------
-      - name: Push lite multi-arch manifest
-        run: |
-          IFS=',' read -ra TAGS <<< "${{ steps.meta.outputs.LITE_TAGS }}"
-          TAG_ARGS=""
-          for tag in "${TAGS[@]}"; do
-            TAG_ARGS="${TAG_ARGS} -t ${tag}"
-          done
-
-          docker buildx build ${TAG_ARGS} \
-            --build-arg VERSION="${{ needs.prepare.outputs.version }}" \
-            --build-arg GIT_COMMIT="${{ steps.meta.outputs.GIT_COMMIT }}" \
-            --build-arg BUILD_TIME="${{ steps.meta.outputs.BUILD_TIME }}" \
-            --platform linux/amd64,linux/arm64,linux/arm/v7 \
-            --cache-from type=gha,scope=lite-linux-amd64 \
-            --cache-from type=gha,scope=lite-linux-arm64 \
-            --cache-from type=gha,scope=lite-linux-armv7 \
-            --push \
-            .
-
-      # ---------- 逐平台构建 full 版本并导出 tar ----------
+      # ---------- 逐平台构建完整版并导出 tar（写 GHA cache，下面 manifest 步骤复用）----------
       - name: Build & save full linux/amd64
         run: |
           docker buildx build \
             --build-arg VERSION="${{ needs.prepare.outputs.version }}" \
             --build-arg GIT_COMMIT="${{ steps.meta.outputs.GIT_COMMIT }}" \
             --build-arg BUILD_TIME="${{ steps.meta.outputs.BUILD_TIME }}" \
-            --build-arg FULL_BUILD=true \
             --platform linux/amd64 \
             --tag ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:tmp-full-amd64 \
             --cache-from type=gha,scope=full-linux-amd64 \
@@ -381,7 +311,7 @@ jobs:
             --load \
             .
           docker save ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:tmp-full-amd64 \
-            -o docker-tars/songloft-docker-linux-amd64-full.tar
+            -o docker-tars/songloft-docker-linux-amd64.tar
           docker rmi ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:tmp-full-amd64 2>/dev/null || true
 
       - name: Build & save full linux/arm64
@@ -390,7 +320,6 @@ jobs:
             --build-arg VERSION="${{ needs.prepare.outputs.version }}" \
             --build-arg GIT_COMMIT="${{ steps.meta.outputs.GIT_COMMIT }}" \
             --build-arg BUILD_TIME="${{ steps.meta.outputs.BUILD_TIME }}" \
-            --build-arg FULL_BUILD=true \
             --platform linux/arm64 \
             --tag ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:tmp-full-arm64 \
             --cache-from type=gha,scope=full-linux-arm64 \
@@ -398,7 +327,7 @@ jobs:
             --load \
             .
           docker save ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:tmp-full-arm64 \
-            -o docker-tars/songloft-docker-linux-arm64-full.tar
+            -o docker-tars/songloft-docker-linux-arm64.tar
           docker rmi ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:tmp-full-arm64 2>/dev/null || true
 
       - name: Build & save full linux/arm/v7
@@ -407,7 +336,6 @@ jobs:
             --build-arg VERSION="${{ needs.prepare.outputs.version }}" \
             --build-arg GIT_COMMIT="${{ steps.meta.outputs.GIT_COMMIT }}" \
             --build-arg BUILD_TIME="${{ steps.meta.outputs.BUILD_TIME }}" \
-            --build-arg FULL_BUILD=true \
             --platform linux/arm/v7 \
             --tag ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:tmp-full-armv7 \
             --cache-from type=gha,scope=full-linux-armv7 \
@@ -415,10 +343,10 @@ jobs:
             --load \
             .
           docker save ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:tmp-full-armv7 \
-            -o docker-tars/songloft-docker-linux-arm-v7-full.tar
+            -o docker-tars/songloft-docker-linux-arm-v7.tar
           docker rmi ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:tmp-full-armv7 2>/dev/null || true
 
-      # ---------- 推送 full 多架构 manifest（命中上面的 GHA cache）----------
+      # ---------- 推送完整版多架构 manifest（命中上面的 GHA cache，无需重新编译）----------
       - name: Push full multi-arch manifest
         run: |
           IFS=',' read -ra TAGS <<< "${{ steps.meta.outputs.FULL_TAGS }}"
@@ -431,11 +359,83 @@ jobs:
             --build-arg VERSION="${{ needs.prepare.outputs.version }}" \
             --build-arg GIT_COMMIT="${{ steps.meta.outputs.GIT_COMMIT }}" \
             --build-arg BUILD_TIME="${{ steps.meta.outputs.BUILD_TIME }}" \
-            --build-arg FULL_BUILD=true \
             --platform linux/amd64,linux/arm64,linux/arm/v7 \
             --cache-from type=gha,scope=full-linux-amd64 \
             --cache-from type=gha,scope=full-linux-arm64 \
             --cache-from type=gha,scope=full-linux-armv7 \
+            --push \
+            .
+
+      # ---------- 逐平台构建精简版并导出 tar ----------
+      - name: Build & save lite linux/amd64
+        run: |
+          docker buildx build \
+            --build-arg VERSION="${{ needs.prepare.outputs.version }}" \
+            --build-arg GIT_COMMIT="${{ steps.meta.outputs.GIT_COMMIT }}" \
+            --build-arg BUILD_TIME="${{ steps.meta.outputs.BUILD_TIME }}" \
+            --build-arg LITE_BUILD=true \
+            --platform linux/amd64 \
+            --tag ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:tmp-lite-amd64 \
+            --cache-from type=gha,scope=lite-linux-amd64 \
+            --cache-to type=gha,scope=lite-linux-amd64,mode=max \
+            --load \
+            .
+          docker save ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:tmp-lite-amd64 \
+            -o docker-tars/songloft-docker-linux-amd64-lite.tar
+          docker rmi ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:tmp-lite-amd64 2>/dev/null || true
+
+      - name: Build & save lite linux/arm64
+        run: |
+          docker buildx build \
+            --build-arg VERSION="${{ needs.prepare.outputs.version }}" \
+            --build-arg GIT_COMMIT="${{ steps.meta.outputs.GIT_COMMIT }}" \
+            --build-arg BUILD_TIME="${{ steps.meta.outputs.BUILD_TIME }}" \
+            --build-arg LITE_BUILD=true \
+            --platform linux/arm64 \
+            --tag ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:tmp-lite-arm64 \
+            --cache-from type=gha,scope=lite-linux-arm64 \
+            --cache-to type=gha,scope=lite-linux-arm64,mode=max \
+            --load \
+            .
+          docker save ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:tmp-lite-arm64 \
+            -o docker-tars/songloft-docker-linux-arm64-lite.tar
+          docker rmi ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:tmp-lite-arm64 2>/dev/null || true
+
+      - name: Build & save lite linux/arm/v7
+        run: |
+          docker buildx build \
+            --build-arg VERSION="${{ needs.prepare.outputs.version }}" \
+            --build-arg GIT_COMMIT="${{ steps.meta.outputs.GIT_COMMIT }}" \
+            --build-arg BUILD_TIME="${{ steps.meta.outputs.BUILD_TIME }}" \
+            --build-arg LITE_BUILD=true \
+            --platform linux/arm/v7 \
+            --tag ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:tmp-lite-armv7 \
+            --cache-from type=gha,scope=lite-linux-armv7 \
+            --cache-to type=gha,scope=lite-linux-armv7,mode=max \
+            --load \
+            .
+          docker save ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:tmp-lite-armv7 \
+            -o docker-tars/songloft-docker-linux-arm-v7-lite.tar
+          docker rmi ${{ env.DOCKER_USERNAME }}/${{ env.IMAGE_NAME }}:tmp-lite-armv7 2>/dev/null || true
+
+      # ---------- 推送精简版多架构 manifest（命中上面的 GHA cache）----------
+      - name: Push lite multi-arch manifest
+        run: |
+          IFS=',' read -ra TAGS <<< "${{ steps.meta.outputs.LITE_TAGS }}"
+          TAG_ARGS=""
+          for tag in "${TAGS[@]}"; do
+            TAG_ARGS="${TAG_ARGS} -t ${tag}"
+          done
+
+          docker buildx build ${TAG_ARGS} \
+            --build-arg VERSION="${{ needs.prepare.outputs.version }}" \
+            --build-arg GIT_COMMIT="${{ steps.meta.outputs.GIT_COMMIT }}" \
+            --build-arg BUILD_TIME="${{ steps.meta.outputs.BUILD_TIME }}" \
+            --build-arg LITE_BUILD=true \
+            --platform linux/amd64,linux/arm64,linux/arm/v7 \
+            --cache-from type=gha,scope=lite-linux-amd64 \
+            --cache-from type=gha,scope=lite-linux-arm64 \
+            --cache-from type=gha,scope=lite-linux-armv7 \
             --push \
             .
 

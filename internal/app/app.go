@@ -480,7 +480,7 @@ func ParseConfig() (*config.AppConfig, error) {
 		if version.BuildType != "" {
 			fmt.Printf("Build Type: %s\n", version.BuildType)
 		} else {
-			fmt.Printf("Build Type: lite\n")
+			fmt.Printf("Build Type: full\n")
 		}
 		os.Exit(0)
 	}

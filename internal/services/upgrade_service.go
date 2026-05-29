@@ -194,8 +194,8 @@ func (s *UpgradeService) getBaseImageBuildType() string {
 func (s *UpgradeService) getPlatformSuffix() string {
 	// 当前只支持 Linux amd64（Docker 环境）
 	suffix := "-linux-amd64"
-	if s.getBaseImageBuildType() == "full" {
-		suffix += "-full"
+	if s.getBaseImageBuildType() == "lite" {
+		suffix += "-lite"
 	}
 	return suffix
 }

@@ -79,7 +79,7 @@ get_build_type() {
     if [ -f "$binary_path" ]; then
         build_type=$("$binary_path" -version 2>&1 | grep "Build Type:" | awk '{print $3}')
         if [ -z "$build_type" ]; then
-            echo "lite"
+            echo "full"
         else
             echo "$build_type"
         fi

@@ -30,11 +30,11 @@ docker run -d \
   songloft/songloft:latest
 ```
 
-### Q: 完整版和轻量版有什么区别？
+### Q: 完整版和精简版有什么区别？
 
 A: 
-- **完整版**（`-tags full`）：将 Flutter Web 前端嵌入到 Go 二进制中，访问后端地址即可直接使用 Web 界面
-- **轻量版**（默认）：不包含前端，仅提供 API 服务，需要单独部署前端或使用客户端
+- **完整版**（默认）：将 Flutter Web 前端嵌入到 Go 二进制中，访问后端地址即可直接使用 Web 界面
+- **精简版**（`-tags lite`）：不包含前端，仅提供 API 服务，需要单独部署前端或使用客户端
 
 ## 配置与运行
 
@@ -59,14 +59,14 @@ docker run -d \
   -v /path/to/data:/app/data \
   -e ADMIN_USERNAME=admin \
   -e ADMIN_PASSWORD=your_secure_password \
-  songloft/songloft:full
+  songloft/songloft:latest
 ```
 
 **Docker Compose 启动**：修改 `docker-compose.yml` 中的 `ADMIN_PASSWORD`：
 ```yaml
 services:
   songloft:
-    image: songloft/songloft:full
+    image: songloft/songloft:latest
     container_name: songloft
     restart: always
     ports:

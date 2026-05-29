@@ -29,8 +29,10 @@ Songloft 是自托管本地音乐服务器，多仓库结构：
 ```bash
 # 后端
 make run            # 启动（dev 模式，含 Swagger）
-make build          # 编译开发版
-make build-prod     # 编译生产轻量版（不含 Swagger/前端）
+make build          # 编译开发版（完整版，嵌入前端）
+make build-lite     # 编译开发版（精简版，不嵌入前端）
+make build-prod     # 编译生产版（完整版，嵌入前端）
+make build-prod-lite # 编译生产版（精简版，不含前端）
 make test           # 测试
 make check          # fmt + vet + test
 make sqlc           # 重新生成 sqlc 代码（改了 queries/*.sql 后必跑）
@@ -84,7 +86,7 @@ cd songloft-player && flutter run -d chrome --dart-define=DEPLOY_MODE=embedded
 
 ## 构建与部署
 
-- 构建标签：`dev`（含 Swagger，不嵌前端） / `full`（嵌 Flutter Web） / 无标签（轻量）
+- 构建标签：`dev`（含 Swagger + pprof） / `lite`（精简版，不嵌前端） / 无标签（完整版，嵌 Flutter Web）
 - 嵌入路径是 `songloft-player-build/web-embedded`（**不是** `songloft-player/build/web-embedded`）
 - SPA 回退：`internal/app/embed.go` 处理，文件不存在时返回 `index.html`
 - 部署模式由 `--dart-define=DEPLOY_MODE=embedded|standalone` 切换，`AppConfig.isEmbedded` 是编译时常量，tree-shaking 会移除独立模式下的 API 地址 UI

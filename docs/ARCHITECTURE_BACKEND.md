@@ -174,15 +174,15 @@ HTTP Server (main.go)
 
 | 标签 | 说明 | 用途 |
 |------|------|------|
-| `dev` | 开发模式 | 包含 Swagger 文档，跳过前端嵌入 |
-| `full` | 完整模式 | 嵌入 Flutter Web 构建产物到二进制 |
-| 无标签 | 轻量模式 | 不嵌入前端，不含 Swagger |
+| `dev` | 开发模式 | 包含 Swagger 文档 + pprof |
+| `lite` | 精简模式 | 不嵌入前端，体积更小 |
+| 无标签 | 完整模式（默认） | 嵌入 Flutter Web 构建产物到二进制 |
 
 ### 前端嵌入机制
 
 ```
-web_embed.go      (build tag: !full)  → 空 embed.FS
-web_embed_full.go  (build tag: full)   → //go:embed all:songloft-player-build/web-embedded
+web_embed.go      (build tag: !lite)  → //go:embed all:songloft-player-build/web-embedded
+web_embed_lite.go  (build tag: lite)   → 空 embed.FS
 ```
 
 ## 设计模式

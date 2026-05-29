@@ -32,15 +32,15 @@ COPY . .
 
 # 使用缓存挂载加速编译（Go 编译缓存会被保留）
 # 同时挂载 GOMODCACHE 和 GOCACHE
-# 根据 FULL_BUILD 参数选择构建完整版或 lite 版本
-ARG FULL_BUILD=false
+# 根据 LITE_BUILD 参数选择构建精简版或完整版（默认完整版）
+ARG LITE_BUILD=false
 ARG VERSION
 RUN --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
     set -x && \
     echo "VERSION ARG = [${VERSION}]" && \
-    if [ "$FULL_BUILD" = "true" ]; then \
-        make build-prod-full GIT_COMMIT="${GIT_COMMIT}" BUILD_TIME="${BUILD_TIME}" BUILD_TYPE=full ${VERSION:+VERSION=${VERSION}}; \
+    if [ "$LITE_BUILD" = "true" ]; then \
+        make build-prod-lite GIT_COMMIT="${GIT_COMMIT}" BUILD_TIME="${BUILD_TIME}" BUILD_TYPE=lite ${VERSION:+VERSION=${VERSION}}; \
     else \
         make build-prod GIT_COMMIT="${GIT_COMMIT}" BUILD_TIME="${BUILD_TIME}" ${VERSION:+VERSION=${VERSION}}; \
     fi

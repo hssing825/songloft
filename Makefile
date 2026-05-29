@@ -25,7 +25,8 @@ LDFLAGS=-s -w \
 
 # 构建标签说明：
 #   dev  - 开发模式（含 Swagger + pprof）
-#   full - 完整版（嵌入前端资源）
+#   lite - 精简版（不嵌入前端资源）
+# 默认（无标签）= 完整版（嵌入 Flutter Web 前端）
 # 使用 -tags "tag1,tag2" 语法组合多个标签
 
 # 默认目标
@@ -85,19 +86,19 @@ build-frontend-all: ## 构建 Flutter 前端当前系统支持的所有平台
 	@bash songloft-player/scripts/build-frontend.sh all $(if $(OUTPUT_DIR),$(OUTPUT_DIR),songloft-player-build)
 
 .PHONY: build
-build: swagger ## 编译项目（开发环境，lite 版本，不嵌入前端）
+build: swagger ## 编译项目（开发环境，完整版本，嵌入前端）
 	@echo "$(BLUE)正在编译 $(BINARY_NAME)...$(NC)"
 	$(GO) build $(GOFLAGS) -tags dev -ldflags="$(LDFLAGS)" -o $(BINARY_NAME) .
 	@echo "$(GREEN)✓ 编译完成: $(BINARY_NAME)$(NC)"
 
-.PHONY: build-full
-build-full: swagger ## 编译项目（开发环境，完整版本，嵌入前端）
-	@echo "$(BLUE)正在编译完整版 $(BINARY_NAME)...$(NC)"
-	$(GO) build $(GOFLAGS) -tags "dev,full" -ldflags="$(LDFLAGS)" -o $(BINARY_NAME) .
+.PHONY: build-lite
+build-lite: swagger ## 编译项目（开发环境，lite 版本，不嵌入前端）
+	@echo "$(BLUE)正在编译精简版 $(BINARY_NAME)...$(NC)"
+	$(GO) build $(GOFLAGS) -tags "dev,lite" -ldflags="$(LDFLAGS)" -o $(BINARY_NAME) .
 	@echo "$(GREEN)✓ 编译完成: $(BINARY_NAME)$(NC)"
 
 .PHONY: build-prod
-build-prod: ## 编译项目（生产环境，lite 版本）
+build-prod: ## 编译项目（生产环境，完整版本，嵌入前端）
 	@echo "$(BLUE)正在编译生产环境版本 $(BINARY_NAME)...$(NC)"
 	$(GO) build $(GOFLAGS) -ldflags="$(LDFLAGS)" -o $(BINARY_NAME) .
 	@if command -v upx >/dev/null 2>&1; then \
@@ -109,10 +110,10 @@ build-prod: ## 编译项目（生产环境，lite 版本）
 	fi
 	@echo "$(GREEN)✓ 编译完成：$(BINARY_NAME)$(NC)"
 
-.PHONY: build-prod-full
-build-prod-full: ## 编译项目（生产环境，完整版本，嵌入前端）
-	@echo "$(BLUE)正在编译生产环境完整版 $(BINARY_NAME)...$(NC)"
-	$(GO) build $(GOFLAGS) -tags full -ldflags="$(LDFLAGS)" -o $(BINARY_NAME) .
+.PHONY: build-prod-lite
+build-prod-lite: ## 编译项目（生产环境，lite 版本，不嵌入前端）
+	@echo "$(BLUE)正在编译生产环境精简版 $(BINARY_NAME)...$(NC)"
+	$(GO) build $(GOFLAGS) -tags lite -ldflags="$(LDFLAGS)" -o $(BINARY_NAME) .
 	@if command -v upx >/dev/null 2>&1; then \
 		echo "$(BLUE)正在使用 UPX 压缩...$(NC)"; \
 		upx -9 $(BINARY_NAME); \
@@ -123,7 +124,7 @@ build-prod-full: ## 编译项目（生产环境，完整版本，嵌入前端）
 	@echo "$(GREEN)✓ 编译完成：$(BINARY_NAME)$(NC)"
 
 .PHONY: build-linux-prod
-build-linux-prod: ## 编译 Linux 版本（生产环境，lite）
+build-linux-prod: ## 编译 Linux 版本（生产环境，完整版）
 	@echo "$(BLUE)正在编译生产环境 Linux 版本...$(NC)"
 	GOOS=linux GOARCH=amd64 $(GO) build $(GOFLAGS) -ldflags="$(LDFLAGS)" -o $(BINARY_NAME)-linux .
 	@if command -v upx >/dev/null 2>&1; then \
@@ -135,10 +136,10 @@ build-linux-prod: ## 编译 Linux 版本（生产环境，lite）
 	fi
 	@echo "$(GREEN)✓ 编译完成：$(BINARY_NAME)-linux$(NC)"
 
-.PHONY: build-linux-prod-full
-build-linux-prod-full: ## 编译 Linux 版本（生产环境，完整版）
-	@echo "$(BLUE)正在编译生产环境 Linux 完整版...$(NC)"
-	GOOS=linux GOARCH=amd64 $(GO) build $(GOFLAGS) -tags full -ldflags="$(LDFLAGS)" -o $(BINARY_NAME)-linux .
+.PHONY: build-linux-prod-lite
+build-linux-prod-lite: ## 编译 Linux 版本（生产环境，精简版）
+	@echo "$(BLUE)正在编译生产环境 Linux 精简版...$(NC)"
+	GOOS=linux GOARCH=amd64 $(GO) build $(GOFLAGS) -tags lite -ldflags="$(LDFLAGS)" -o $(BINARY_NAME)-linux .
 	@if command -v upx >/dev/null 2>&1; then \
 		echo "$(BLUE)正在使用 UPX 压缩...$(NC)"; \
 		upx -9 $(BINARY_NAME)-linux; \
@@ -149,36 +150,36 @@ build-linux-prod-full: ## 编译 Linux 版本（生产环境，完整版）
 	@echo "$(GREEN)✓ 编译完成：$(BINARY_NAME)-linux$(NC)"
 
 .PHONY: build-windows-prod
-build-windows-prod: ## 编译 Windows 版本（生产环境，lite）
+build-windows-prod: ## 编译 Windows 版本（生产环境，完整版）
 	@echo "$(BLUE)正在编译生产环境 Windows 版本...$(NC)"
 	GOOS=windows GOARCH=amd64 $(GO) build $(GOFLAGS) -ldflags="$(LDFLAGS)" -o $(BINARY_NAME).exe .
 	@echo "$(GREEN)✓ 编译完成: $(BINARY_NAME).exe$(NC)"
 
-.PHONY: build-windows-prod-full
-build-windows-prod-full: ## 编译 Windows 版本（生产环境，完整版）
-	@echo "$(BLUE)正在编译生产环境 Windows 完整版...$(NC)"
-	GOOS=windows GOARCH=amd64 $(GO) build $(GOFLAGS) -tags full -ldflags="$(LDFLAGS)" -o $(BINARY_NAME).exe .
+.PHONY: build-windows-prod-lite
+build-windows-prod-lite: ## 编译 Windows 版本（生产环境，精简版）
+	@echo "$(BLUE)正在编译生产环境 Windows 精简版...$(NC)"
+	GOOS=windows GOARCH=amd64 $(GO) build $(GOFLAGS) -tags lite -ldflags="$(LDFLAGS)" -o $(BINARY_NAME).exe .
 	@echo "$(GREEN)✓ 编译完成: $(BINARY_NAME).exe$(NC)"
 
 .PHONY: build-darwin-prod
-build-darwin-prod: ## 编译 macOS 版本（生产环境，lite）
+build-darwin-prod: ## 编译 macOS 版本（生产环境，完整版）
 	@echo "$(BLUE)正在编译生产环境 macOS 版本...$(NC)"
 	GOOS=darwin GOARCH=amd64 $(GO) build $(GOFLAGS) -ldflags="$(LDFLAGS)" -o $(BINARY_NAME)-darwin .
 	@echo "$(GREEN)✓ 编译完成: $(BINARY_NAME)-darwin$(NC)"
 
-.PHONY: build-darwin-prod-full
-build-darwin-prod-full: ## 编译 macOS 版本（生产环境，完整版）
-	@echo "$(BLUE)正在编译生产环境 macOS 完整版...$(NC)"
-	GOOS=darwin GOARCH=amd64 $(GO) build $(GOFLAGS) -tags full -ldflags="$(LDFLAGS)" -o $(BINARY_NAME)-darwin .
+.PHONY: build-darwin-prod-lite
+build-darwin-prod-lite: ## 编译 macOS 版本（生产环境，精简版）
+	@echo "$(BLUE)正在编译生产环境 macOS 精简版...$(NC)"
+	GOOS=darwin GOARCH=amd64 $(GO) build $(GOFLAGS) -tags lite -ldflags="$(LDFLAGS)" -o $(BINARY_NAME)-darwin .
 	@echo "$(GREEN)✓ 编译完成: $(BINARY_NAME)-darwin$(NC)"
 
 .PHONY: build-all-prod
-build-all-prod: build-linux-prod build-windows-prod build-darwin-prod ## 编译所有平台版本（生产环境，lite）
+build-all-prod: build-linux-prod build-windows-prod build-darwin-prod ## 编译所有平台版本（生产环境，完整版）
 	@echo "$(GREEN)✓ 所有平台编译完成$(NC)"
 
-.PHONY: build-all-prod-full
-build-all-prod-full: build-linux-prod-full build-windows-prod-full build-darwin-prod-full ## 编译所有平台版本（生产环境，完整版）
-	@echo "$(GREEN)✓ 所有平台完整版编译完成$(NC)"
+.PHONY: build-all-prod-lite
+build-all-prod-lite: build-linux-prod-lite build-windows-prod-lite build-darwin-prod-lite ## 编译所有平台版本（生产环境，精简版）
+	@echo "$(GREEN)✓ 所有平台精简版编译完成$(NC)"
 
 .PHONY: build-cross
 build-cross: ## 交叉编译（用法：make build-cross GOOS=linux GOARCH=amd64 OUTPUT=build/songloft-linux-amd64 [EXTRA_TAGS=full]）
@@ -239,7 +240,7 @@ clean: ## 清理编译产物
 run: ## 运行项目（开发环境，使用默认配置：admin/admin/58091）
 	@echo "$(BLUE)正在启动服务...$(NC)"
 	@echo "$(BLUE)Username: admin, Password: admin, 端口: 58091$(NC)"
-	$(GO) run -tags "dev,full" . -username admin -password admin -port 58091
+	$(GO) run -tags dev . -username admin -password admin -port 58091
 
 .PHONY: run-prod
 run-prod: ## 运行项目（生产环境）
@@ -288,7 +289,6 @@ tidy: ## 整理依赖
 docker-build: ## 构建 Docker 测试镜像（版本号+1，触发 entrypoint 热替换逻辑）
 	@echo "$(BLUE)正在构建 Docker 测试镜像...$(NC)"
 	docker build \
-		--build-arg FULL_BUILD=true \
 		--build-arg GIT_COMMIT=$(GIT_COMMIT) \
 		--build-arg BUILD_TIME=$(BUILD_TIME) \
 		--build-arg VERSION=dev \
