@@ -75,6 +75,13 @@ cd songloft-player && flutter run -d chrome --dart-define=DEPLOY_MODE=embedded
 
 ---
 
+## Git 提交约定
+
+- 提交信息**禁止**添加 `Co-Authored-By` 尾部标记
+- 遵循 Conventional Commits 格式：`type(scope): description`
+
+---
+
 ## 构建与部署
 
 - 构建标签：`dev`（含 Swagger，不嵌前端） / `full`（嵌 Flutter Web） / 无标签（轻量）
