@@ -9,7 +9,8 @@
 # 流程：
 #   1. 更新 Makefile 中的 VERSION
 #   2. 更新 main.go 中的 Swagger @version
-#   3. git commit + tag + push（push tag 后由 .github/workflows/release.yml 完成
+#   3. make swagger 重新生成 Swagger 文档
+#   4. git commit + tag + push（push tag 后由 .github/workflows/release.yml 完成
 #      多平台构建、Docker 镜像、GitHub Release，以及 CHANGELOG.md 更新并回写到 main）
 #
 # 最后一行 stdout 输出新版本号（带 v 前缀），方便链式调用。
@@ -190,7 +191,7 @@ main() {
     fi
 
     # 1. 更新 Makefile
-    log_info "[1/3] 更新 Makefile 中的版本号..."
+    log_info "[1/4] 更新 Makefile 中的版本号..."
     if [ "$DRY_RUN" = true ]; then
         echo -e "${YELLOW}[dry-run]${NC} sed: VERSION ?= ${current_version} -> VERSION ?= ${new_version}" >&2
     else
