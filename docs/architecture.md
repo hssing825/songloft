@@ -46,7 +46,7 @@ Songloft 是一个自托管的本地音乐服务器，采用前后端分离架�
 │  │ JSPlugin │ │JS Runtime│ │  Cache   │                    │
 │  │ Manager  │ │ (QuickJS)│ │ Service  │                    │
 │  └──────────┘ └──────────┘ └──────────┘                    │
-│  Static: embed.FS (Flutter Web) + SPA 路由回退              │
+│  Static: embed.FS (Lynx Web) + SPA 路由回退              │
 │  Monitoring: Tracely (心跳 + 安装/升级统计 + panic 捕获)     │
 └──────────────────────────────────────────────────────────────┘
                         │
@@ -92,7 +92,7 @@ Songloft 是一个自托管的本地音乐服务器，采用前后端分离架�
 ```
 songloft/
 ├── main.go                     # 主程序入口
-├── web_embed.go                # 完整版（嵌入 Flutter Web，build tag: !lite）
+├── web_embed.go                # 完整版（嵌入 Lynx Web，build tag: !lite）
 ├── web_embed_lite.go           # 精简版（空 embed.FS，build tag: lite）
 ├── mobile/                     # gomobile 绑定入口（Bundle 本地模式）
 │   └── mobile.go               # 导出 Start/Stop/IsRunning/GetPort 供移动端调用
@@ -122,7 +122,7 @@ songloft/
 │   │       ├── features/       # 功能模块（auth / startup / home / library / player / playlist / settings / jsplugin / dlna）
 │   │       └── shared/         # 共享布局、模型、组件
 │   ├── player-lynx/            # Lynx 客户端（子模块）
-│   ├── player-build/           # Flutter Web 构建产物（go:embed 嵌入）
+│   ├── player-build/           # Lynx Web 构建产物（go:embed 嵌入）
 │   ├── themes/                 # 官方主题包仓库（子模块，在线主题目录源）
 │   └── tv/                     # Android TV 客户端（子模块）
 ├── plugins/                    # 插件生态
@@ -144,7 +144,7 @@ songloft/
 | 命令 | 标签 | 说明 |
 |------|------|------|
 | `make run` | `-tags dev` | 开发模式，含 Swagger，嵌入前端 |
-| `make build-prod` | 无标签 | 生产完整版（默认），嵌入 Flutter Web |
+| `make build-prod` | 无标签 | 生产完整版（默认），嵌入 Lynx Web |
 | `make build-prod-lite` | `-tags lite` | 生产精简版，不含前端 |
 | `make build-go-mobile-android` | `-tags lite` | Go 后端编译为 Android .aar（gomobile bind） |
 | `make build-go-mobile-ios` | `-tags lite` | Go 后端编译为 iOS .xcframework（gomobile bind） |

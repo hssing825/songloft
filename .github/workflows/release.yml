@@ -31,10 +31,7 @@ concurrency:
 
 env:
   GO_VERSION: "1.26"
-  # 原生 bundle(桌面/移动)统一 stable 3.44.6(下方各 bundle job 复用此变量)。
-  # web 前端(build-frontend job)单独用 beta 3.47:含引擎修复 #185116
-  # (flutter/flutter#184683,切后台 WebGL context 丢失致 LateInitializationError
-  # 崩溃/白屏),该修复尚未进 stable;待进 stable 后回退与 bundle 统一。
+  # Flutter 原生 bundle（桌面/移动）；完整版 Web 单独使用 Lynx。
   FLUTTER_VERSION: "3.44.6"
   DOCKER_USERNAME: songloft
   IMAGE_NAME: songloft
@@ -241,7 +238,7 @@ jobs:
             docker://ghcr.io/songloft-org/songloft-base-ffmpeg:latest
 
   # ============================================================
-  # Job 2: 构建 Flutter Web（嵌入模式）
+  # Job 2: 构建 Lynx Web（嵌入模式）
   # ============================================================
   build-frontend:
     name: Build Frontend
@@ -254,31 +251,30 @@ jobs:
         with:
           submodules: false
 
-      - name: Init clients/player submodule
-        run: git submodule update --init --recursive -- clients/player
+      - name: Init clients/player-lynx submodule
+        run: git submodule update --init --recursive -- clients/player-lynx
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
         with:
-          flutter-version: 3.47.0-0.1.pre
-          channel: beta
-          cache: true
+          version: 11.15.1
 
-      - name: Install brotli
-        run: sudo apt-get install -y -qq brotli
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+          cache-dependency-path: clients/player-lynx/pnpm-lock.yaml
 
-      - name: Flutter pub get
-        run: |
-          cd clients/player
-          flutter pub get
-
-      - name: Build Flutter Web (embedded mode)
+      - name: Build Lynx Web (embedded mode)
         env:
           VERSION: ${{ needs.prepare.outputs.version }}
-          FRONTEND_VERSION: ${{ needs.prepare.outputs.version_tag }}
-          FRONTEND_BUILD_TIME: ${{ needs.prepare.outputs.build_time }}
           BUILD_TIME: ${{ needs.prepare.outputs.build_time }}
         run: make build-frontend-web-embedded
+
+      - name: Verify embedded Web deployment contract
+        working-directory: clients/player-lynx
+        run: node --test scripts/__tests__/web-embedded.node-test.mjs
 
       - name: Upload frontend artifact
         uses: actions/upload-artifact@v4

@@ -4,7 +4,7 @@
 
 本文描述 Flutter 客户端。ReactLynx + TypeScript 的 Lynx 预览客户端支持 Android/iOS/HarmonyOS/Web，详见[客户端选择](clients.md)及 [Lynx 指南](player-lynx/index.md)；它尚无桌面或 Bundle 本地后端，不沿用下面的 Flutter 目录与构建命令。
 
-Songloft 前端是一个基于 Flutter 的跨平台音乐播放器，支持 **Android、iOS、macOS、Windows、Linux、Web** 六个平台。Flutter Web 构建产物可嵌入到 Go 后端二进制中一起分发。同时支持 **Bundle 本地模式**：将 Go 后端嵌入客户端（移动端通过 gomobile 原生库，桌面端通过子进程），无需单独部署服务器即可播放本地音乐。
+Songloft Flutter 客户端支持 **Android、iOS、macOS、Windows、Linux、Web** 六个平台。完整版服务器默认嵌入独立的 Lynx Web（`clients/player-lynx`）；旧 Flutter Web 嵌入版仍可显式选择。同时支持 **Bundle 本地模式**：将 Go 后端嵌入 Flutter 客户端（移动端通过 gomobile 原生库，桌面端通过子进程），无需单独部署服务器即可播放本地音乐。
 
 ## 技术栈
 
@@ -490,7 +490,7 @@ final borderRadius =
 flutter build web --dart-define=DEPLOY_MODE=embedded
 ```
 
-- Flutter Web 嵌入 Go 后端，同域访问
+- 显式选择旧 Flutter Web 嵌入版时，与 Go 后端同域访问
 - `AppConfig.baseUrl` 自动设为 `Uri.base.origin`
 - **隐藏** 登录页 API 地址输入框和设置页 API 配置
 - `AppConfig.isEmbedded` 是编译时常量，tree-shaking 会移除 API 地址 UI 代码
@@ -561,7 +561,7 @@ flutter test                       # 运行测试
 
 ```bash
 # Web 嵌入模式（输出至 clients/player-build/web-embedded，供 Go 二进制 //go:embed）
-make build-frontend-web-embedded
+make build-frontend-flutter-web-embedded
 
 # Web 独立部署版
 make build-frontend-web

@@ -18,7 +18,7 @@ Songloft offers Flutter, Lynx, Electron desktop, and TV clients connecting to th
 - [Bundle downloads](https://github.com/songloft-org/songloft/releases/latest): choose `songloft-bundled-*` assets.
 - [Architecture (Chinese)](../player/architecture.md) · [Build guide (Chinese)](../player/build_guide.md) · [Source](https://github.com/songloft-org/songloft-player).
 
-Full backend images/binaries embed Flutter Web by default. Adding a Lynx download option does not switch the bundled interface.
+Full backend images/binaries embed Lynx Web by default. Native Flutter and standalone Web remain available; explicitly build legacy embedded Flutter Web with `make build-frontend-flutter-web-embedded`.
 
 ## Lynx preview
 
@@ -33,11 +33,11 @@ Underlying technology: [Lynx official website](https://lynxjs.org/) · [ReactLyn
 | Android 5.0+             | `songloft-lynx-android.apk`                      | Release-signed; upgrades require the same key and a newer build number      |
 | iOS 15+                  | `songloft-lynx-ios-nosign.ipa`                   | Unsigned; re-sign before installation. Live Activity needs iOS 16.2+        |
 | HarmonyOS NEXT / API 13+ | `songloft-lynx-harmony.hap`                      | Experimental; profile controls eligible devices. No fullscreen video        |
-| Web                      | `songloft-lynx-web-{standalone,embedded}.tar.gz` | Requires HTTPS and COOP/COEP; no Bundle, DLNA, or single-song offline cache |
+| Web                      | `songloft-lynx-web-{standalone,embedded}.tar.gz` | Core flows support ordinary HTTP; HTTPS enables clipboard/wake lock; no Bundle, DLNA, or single-song offline cache |
 
 Releases include `version.json` and `checksums.txt`. Downloadable dev packages are also Release builds with no TCP/E2E bridge.
 
-Standalone Web shows a server-address field; embedded uses the same-origin server and hides that field. Both require suitable MIME types and isolation headers. Replacing Go's embedded Flutter assets does not automatically satisfy the Lynx host contract. See [Web deployment](player-lynx/web-deployment.md); subpath deployment is unverified.
+Standalone Web shows a server-address field; embedded uses the same-origin server and hides that field. Both require suitable MIME types; the current asynchronous engine does not require SAB or isolation headers. Root and subpath deployments are verified; see [Web deployment](player-lynx/web-deployment.md) for browser, plugin and background-operation limits.
 
 ## Songloft Desktop (Electron desktop client)
 

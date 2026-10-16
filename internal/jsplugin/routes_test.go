@@ -38,8 +38,7 @@ func TestAssetURLFallback(t *testing.T) {
 
 // TestTryServeStaticFileCOEPHeader 验证插件 HTML 响应携带 COEP: credentialless 头。
 //
-// Lynx Web 宿主页必须开 COEP: require-corp（web-core 的 SharedArrayBuffer 依赖），
-// 而 COEP 页面里的跨源 iframe 要求其文档响应自身也带 COEP 头——缺失时
+// 宿主页选择 COEP: require-corp 时，跨源 iframe 要求其文档响应自身也带 COEP 头——缺失时
 // Chrome/Firefox 直接 ERR_BLOCKED_BY_RESPONSE，插件 tab 呈空白且无应用层报错
 // （corpMiddleware 的 CORP 头只覆盖子资源，盖不住 iframe 文档这一层）。
 // 同时验证非 HTML 资源不受影响（强缓存路径保持原样）。

@@ -13,7 +13,7 @@ import (
 
 const webEmbedRoot = "clients/player-build/web-embedded"
 
-// registerWebStatic 注册 Flutter Web 前端静态文件服务。
+// registerWebStatic 注册嵌入的 Lynx Web 前端静态文件服务。
 // 精简构建（lite build tag）时 webDist 为空 embed.FS，不挂载根路由，以纯 API 模式运行。
 func (a *App) registerWebStatic() {
 	// 加 charset=utf-8，防止显式覆盖 .js MIME 时丢掉 charset 导致浏览器用默认编码解码 Unicode 字符为乱码。
@@ -83,19 +83,9 @@ func (a *App) registerWebStatic() {
 			return
 		}
 
-		// 分路径缓存策略。
-		// Flutter Web 用固定文件名（main.dart.js / flutter.js / assets/* 均无内容哈希），
-		// 且本项目 index.html 未注册 service worker，长 max-age 会导致服务端升级后浏览器
-		// 仍用缓存里的旧 main.dart.js（普通刷新不失效，最长扛满 max-age），看起来就是
-		// “新版功能失效”。故 app shell 一律 no-cache：配合上面 precompressedFS 设置的 ETag
-		// 走 304 校验，代价极小却保证每次拿到最新版。只有基本不随版本变化的 canvaskit
-		// 引擎与字体资源保留长缓存。
-		switch {
-		case strings.HasPrefix(urlPath, "canvaskit/") || strings.HasPrefix(urlPath, "fonts/"):
-			w.Header().Set("Cache-Control", "public, max-age=2592000, immutable")
-		default:
-			w.Header().Set("Cache-Control", "no-cache")
-		}
+		// Lynx 的入口 bundle、宿主模块和部分引擎脚本使用固定文件名。
+		// 每次校验版本，配合预压缩资源的 ETag 避免升级后继续运行旧代码。
+		w.Header().Set("Cache-Control", "no-cache")
 
 		// 优先从预压缩缓存返回，未命中（如 woff2 字体）fallback 到 http.FileServer
 		if pfs.serve(w, r, urlPath) {

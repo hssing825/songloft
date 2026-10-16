@@ -64,8 +64,9 @@ make sqlc           # 重新生成 sqlc 代码（改了 queries/*.sql 后必跑�
 make swagger        # 重新生成 API 文档
 
 # 前端构建（产物落到 clients/player-build/，供后端嵌入或独立部署）
-make build-frontend-web-embedded   # 嵌入 Go 二进制用（隐藏 API 地址 UI）
-make build-frontend-web            # 独立部署 web
+make build-frontend-web-embedded   # Lynx Web，嵌入 Go 二进制（隐藏 API 地址 UI）
+make build-frontend-web            # 独立部署 Flutter Web（保留）
+make build-frontend-flutter-web-embedded # 旧 Flutter 嵌入版（覆盖同目录产物）
 make build-frontend-{linux,windows,macos,android,ios,all}
 
 # Bundle 本地模式（Go 后端编译为移动端库 / 桌面端可执行文件）
@@ -251,13 +252,14 @@ Songloft 文档站（`docs/`）用 **VitePress + 自定义主题**（`docs/.vite
 
 ## 构建与部署
 
-- 构建标签：`dev`（含 Swagger + pprof） / `lite`（精简版，不嵌前端） / 无标签（完整版，嵌 Flutter Web）
+- 构建标签：`dev`（含 Swagger + pprof） / `lite`（精简版，不嵌前端） / 无标签（完整版，嵌 Lynx Web）
 - `VERSION=dev` 时 Makefile 自动启用 `-tags dev`（无需手动传 `EXTRA_TAGS=dev`）
 - 两个正交维度：**VERSION**（`dev` / `X.Y.Z`）控制是否为开发版；**BUILD_TYPE**（`lite` / 空即 `full`）控制是否嵌入前端。**禁止** `BUILD_TYPE=dev` 等混合值
 - 嵌入路径是 `clients/player-build/web-embedded`（**不是** `clients/player/build/web-embedded`）
 - SPA 回退：`internal/app/embed.go` 仅对不存在且末段不含 `.` 的路径返回 `index.html`；缺失的静态资源返回 404，不能返回 HTML 冒充 JS/JSON。
-- 部署模式由 `--dart-define=DEPLOY_MODE=embedded|standalone` 切换，`AppConfig.isEmbedded` 是编译时常量，tree-shaking 会移除嵌入模式下的 API 地址 UI
-- 子路径部署：启动时通过 `-base-path /xxx` 或 `BASE_PATH=/xxx` 配置；后端用 `http.StripPrefix` 在最外层剥离前缀，`embed.go` 运行时将 `<base href="/">` 替换为 `<base href="/xxx/">`；前端嵌入模式从 `Uri.base.path` 自动检测子路径
+- 默认完整版通过 Node.js 22 + pnpm 11.15.1 构建 Lynx Web，显式应用引擎补丁并预压缩；`embedded-build.json` 分别记录客户端与服务器身份。当前核心流程不强制 SAB、HTTPS 或 COOP/COEP；剪贴板和常亮等能力仍受安全上下文限制。
+- Flutter 的部署模式由 `--dart-define=DEPLOY_MODE=embedded|standalone` 切换，`AppConfig.isEmbedded` 是编译时常量，tree-shaking 会移除嵌入模式下的 API 地址 UI
+- 子路径部署：启动时通过 `-base-path /xxx` 或 `BASE_PATH=/xxx` 配置；后端用 `http.StripPrefix` 在最外层剥离前缀，`embed.go` 运行时将 `<base href="/">` 替换为 `<base href="/xxx/">`；Lynx 宿主页通过 `webBaseUrl` 注入部署目录，供 API、Worker 和静态资源使用，应用使用内存路由
 
 ### Bundle 本地模式（v2.9.0+）
 
@@ -319,6 +321,8 @@ curl -s -X POST http://127.0.0.1:3000/function \
 
 脚本形如 `module.exports = async ({ page }) => { ...; return { data: {...}, type: 'application/json' } }`，
 截图用 `page.screenshot({ encoding: 'base64' })` 塞进 `data` 里带回来再本地 base64 解码成 png。
+
+默认 Lynx Web 控件位于 `document.getElementById('app').shadowRoot`，输入框还有内部 shadow root。通过界面导航，使用真实点击和媒体时间/后端状态断言。以下 Flutter 专属规则仅用于旧 Flutter Web。
 
 ### 驱动 Flutter Web 的踩坑
 

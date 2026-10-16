@@ -50,7 +50,7 @@
 - 📱 **跨平台客户端** — Flutter 客户端支持 Android、iOS、macOS、Windows、Linux、Web 六端
 - 📦 **Bundle 本地模式** — 客户端内嵌 Go 后端，无需部署服务器，手机/电脑直接播放本地音乐
 - 📺 **Kodi 插件客户端** — 支持 Xbox、Apple TV、树莓派、Android TV 等大屏设备，专为遥控器操作优化，带来流畅的客厅影音体验
-- 🌐 **Web 界面** — 完整版内置 Web 前端，开箱即用
+- 🌐 **Web 界面** — 完整版内置 Lynx Web 前端，支持根路径与子路径部署，开箱即用
 - 🔑 **JWT 认证** — 双 Token 机制（Access Token + Refresh Token），支持多设备管理
 - 📡 **网络歌曲 & 电台** — 支持添加网络音频 URL 与电台流，播放时透明缓存到服务端
 - 🔌 **完整 REST API** — 内置 Swagger 文档，方便集成和二次开发

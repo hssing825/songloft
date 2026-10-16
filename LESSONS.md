@@ -10,6 +10,15 @@
 
 ## 条目
 
+### WEB-001：依赖中存在 SharedArrayBuffer 不等于页面必须启用跨源隔离
+
+- 范围：完整版嵌入 Lynx Web 的部署评估，songloft-org/songloft 与 songloft-org/songloft-player-lynx；无关联 Issue。
+- 证据：2026-10-16，父仓库 `d59b12e373525e5dea546ba6531931a01af42c8e`、Lynx `9ced2b895376dfc829895100db70530bf8ac4426`。初次调查沿用部署文档和 CORP 注释，将 RPC 库中的 SAB 同步分支误判为启动硬依赖。实际 `web-core 0.23.1` 的 33 个内部端点全部为异步；Docker Chrome 121 在无 COOP/COEP 的局域网 HTTP、localhost 子路径及 HTTPS 中，页面与两个 Worker 的 SAB 均为 `undefined`，仍完成登录、真实媒体播放/seek/暂停/切歌、收藏后端持久化和刷新会话恢复。
+- Done right：核对实际调用端点，并在无安全上下文、无隔离头、无 SAB 的真实浏览器中验证关键动作；用媒体时间与后端状态辅助截图，不从依赖库符号存在推导部署门槛。HTTPS 场景仅在本次浏览器会话忽略测试证书错误，另用测试 CA 验证 TLS 链；未修改系统信任。证据位于 `/home/hanxi/work/songloft-review/lynx-full-20261016/` 的 `rpc-audit.json`、`logs/*-final.json` 与 `screenshots/`。
+- Not run：Firefox、真实 Safari、插件双引擎和长后台；不将已验收的核心流程外推为所有浏览器/插件均无 SAB 需求。HTTPS 对剪贴板、Wake Lock 等能力的要求独立存在。
+- 后续落地：用户验收预览后授权默认切换及提交推送。构建脚本分离父/子仓库 tag、SHA 和元数据，显式执行引擎补丁、拒绝测试桥产物并预压缩 bundle/WASM；嵌入页增加 Go 可替换的 base 标签，旧脚本在新回归中失败。本地 Lynx 3543 项、84 项发布检查、后端全量及 42 项脚本检查通过，根/子路径 19 项实际动作及旧书签启动通过。证据 `/home/hanxi/work/songloft-review/lynx-default-20261016/`；最终提交、CI 与 dev 产物另按同一 SHA 验收。
+- Seen 1× (2026-10-16)。状态：经验；同一事故不递增，不打正式版 tag。
+
 ### SORT-001：歌单文字排序必须在分页前统一生成拼音键
 
 - 范围：歌单歌曲分页、播放定位 ID 列表及永久名称排序，songloft-org/songloft#524。

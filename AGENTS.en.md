@@ -64,8 +64,9 @@ make sqlc           # Regenerate sqlc code (must run after editing queries/*.sql
 make swagger        # Regenerate API docs
 
 # Frontend build (artifacts land in clients/player-build/, for backend embedding or standalone deployment)
-make build-frontend-web-embedded   # For embedding in the Go binary (hides the API-address UI)
-make build-frontend-web            # Standalone web deployment
+make build-frontend-web-embedded   # Lynx Web embedded in Go (hides the API-address UI)
+make build-frontend-web            # Standalone Flutter Web (retained)
+make build-frontend-flutter-web-embedded # Legacy embedded Flutter Web (overwrites shared output)
 make build-frontend-{linux,windows,macos,android,ios,all}
 
 # Bundle local mode (Go backend compiled into a mobile library / desktop executable)
@@ -251,13 +252,14 @@ The Songloft docs site (`docs/`) uses **VitePress + a custom theme** (`docs/.vit
 
 ## Build and Deployment
 
-- Build tags: `dev` (includes Swagger + pprof) / `lite` (slim version, no embedded frontend) / no tag (full version, embeds Flutter Web)
+- Build tags: `dev` (includes Swagger + pprof) / `lite` (slim version, no embedded frontend) / no tag (full version, embeds Lynx Web)
 - When `VERSION=dev`, the Makefile automatically enables `-tags dev` (no need to manually pass `EXTRA_TAGS=dev`)
 - Two orthogonal dimensions: **VERSION** (`dev` / `X.Y.Z`) controls whether it's a dev build; **BUILD_TYPE** (`lite` / empty i.e. `full`) controls whether the frontend is embedded. **Do not** use mixed values like `BUILD_TYPE=dev`
 - The embed path is `clients/player-build/web-embedded` (**not** `clients/player/build/web-embedded`)
 - SPA fallback: `internal/app/embed.go` returns `index.html` only for missing paths whose final segment contains no `.`; missing static assets return 404, never HTML masquerading as JS/JSON.
-- Deployment mode is switched via `--dart-define=DEPLOY_MODE=embedded|standalone`; `AppConfig.isEmbedded` is a compile-time constant, and tree-shaking removes the API-address UI in embedded mode
-- Sub-path deployment: configured at startup via `-base-path /xxx` or `BASE_PATH=/xxx`; the backend strips the prefix at the outermost layer with `http.StripPrefix`, and `embed.go` replaces `<base href="/">` with `<base href="/xxx/">` at runtime; in embedded mode the frontend auto-detects the sub-path from `Uri.base.path`
+- The full build uses Node.js 22 + pnpm 11.15.1 for Lynx Web, explicitly applies engine patches and precompresses assets. `embedded-build.json` records client and server identities separately. Current core flows do not require SAB, HTTPS or COOP/COEP; clipboard and wake-lock capabilities still depend on a secure context.
+- Flutter deployment mode is switched via `--dart-define=DEPLOY_MODE=embedded|standalone`; `AppConfig.isEmbedded` is a compile-time constant, and tree-shaking removes the API-address UI in embedded mode
+- Sub-path deployment: configured at startup via `-base-path /xxx` or `BASE_PATH=/xxx`; the backend strips the prefix with `http.StripPrefix`, and `embed.go` replaces `<base href="/">` with `<base href="/xxx/">` at runtime. The Lynx host supplies its deployment directory through `webBaseUrl` for API, Worker and static URLs; navigation uses memory history.
 
 ### Bundle Local Mode (v2.9.0+)
 
@@ -323,6 +325,8 @@ curl -s -X POST http://127.0.0.1:3000/function \
 Scripts look like `module.exports = async ({ page }) => { ...; return { data: {...}, type: 'application/json' } }`.
 Take screenshots with `page.screenshot({ encoding: 'base64' })`, return them inside `data`, and base64-decode
 them into PNGs locally.
+
+Default Lynx Web controls live under `document.getElementById('app').shadowRoot`; inputs have another shadow root. Navigate through the UI and assert real media time/backend state. The following Flutter rules apply only to legacy Flutter Web.
 
 ### Pitfalls when driving Flutter Web
 

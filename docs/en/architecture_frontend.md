@@ -4,7 +4,7 @@
 
 This page describes Flutter. The ReactLynx + TypeScript preview client supports Android/iOS/HarmonyOS/Web; see [client selection](clients.md) and [Lynx guides](player-lynx/index.md). It has no desktop or bundled local backend and does not use the Flutter layout or build commands below.
 
-The Songloft frontend is a Flutter-based cross-platform music player supporting six platforms: **Android, iOS, macOS, Windows, Linux, and Web**. The Flutter Web build output can be embedded into the Go backend binary and shipped together. It also supports **Bundle local mode**: embedding the Go backend into the client (as a native library via gomobile on mobile, and as a subprocess on desktop), so users can play local music without deploying a separate server.
+The Songloft Flutter client supports six platforms: **Android, iOS, macOS, Windows, Linux, and Web**. The full server defaults to the separate Lynx Web client (`clients/player-lynx`); legacy embedded Flutter Web remains an explicit option. Flutter also supports **Bundle local mode**: embedding the Go backend into the client (as a native library via gomobile on mobile, and as a subprocess on desktop), so users can play local music without deploying a separate server.
 
 ## Tech Stack
 
@@ -490,7 +490,7 @@ final borderRadius =
 flutter build web --dart-define=DEPLOY_MODE=embedded
 ```
 
-- Flutter Web is embedded into the Go backend, accessed from the same origin
+- Explicitly selected legacy embedded Flutter Web shares the backend origin
 - `AppConfig.baseUrl` is automatically set to `Uri.base.origin`
 - **Hides** the API address input on the login page and the API configuration on the settings page
 - `AppConfig.isEmbedded` is a compile-time constant; tree-shaking removes the API address UI code
@@ -561,7 +561,7 @@ flutter test                       # Run tests
 
 ```bash
 # Web embedded mode (output to clients/player-build/web-embedded, for Go binary //go:embed)
-make build-frontend-web-embedded
+make build-frontend-flutter-web-embedded
 
 # Web standalone deployment build
 make build-frontend-web

@@ -10,6 +10,15 @@ Evidence-backed lessons for the parent and public host contracts; see the [AI wo
 
 ## Entries
 
+### WEB-001: A SharedArrayBuffer dependency does not prove that the page requires cross-origin isolation
+
+- Scope: evaluating embedded Lynx Web for the full server build, songloft-org/songloft and songloft-org/songloft-player-lynx; no associated Issue.
+- Evidence: on 2026-10-16, parent `d59b12e373525e5dea546ba6531931a01af42c8e`, Lynx `9ced2b895376dfc829895100db70530bf8ac4426`. The initial investigation followed deployment documentation and CORP comments, incorrectly treating the RPC library's synchronous SAB branch as a startup requirement. All 33 internal endpoints in web-core 0.23.1 are asynchronous. Docker Chrome 121 completes login, real media playback/seek/pause/track changes, backend favorite persistence and session restoration on reload over LAN HTTP, localhost subpath and HTTPS without COOP/COEP; SAB is undefined in the document and both Workers.
+- Done right: inspect actual endpoint calls and exercise real browser actions without a secure context, isolation headers or SAB. Combine screenshots with media time and backend state rather than deriving deployment requirements from dependency symbols. HTTPS certificate errors were ignored only within the test browser session; the test CA separately verifies the TLS chain. System trust was unchanged. Evidence: `rpc-audit.json`, `logs/*-final.json` and `screenshots/` under `/home/hanxi/work/songloft-review/lynx-full-20261016/`.
+- Not run: Firefox, real Safari, either plugin engine and long background operation. Core-flow acceptance does not prove every browser/plugin is independent of SAB. Clipboard and Wake Lock secure-context requirements remain separate.
+- Follow-up: after accepting the preview, the user authorized the default switch, commits and pushes. The build separates parent/client tags, SHAs and metadata, explicitly applies engine patches, rejects test-bridge artifacts and precompresses bundles/WASM. Embedded HTML gains a Go-replaceable base tag; the old script fails the new regression. Local checks pass 3543 Lynx tests, 84 release checks, the full backend suite and 42 script checks, plus 19 real root/subpath actions and legacy-bookmark startup. Evidence: `/home/hanxi/work/songloft-review/lynx-default-20261016/`. Final commits, CI and dev artifacts require acceptance for the same SHA.
+- Seen 1× (2026-10-16). Status: lesson; the same incident does not increment Seen. No stable tag.
+
 ### SORT-001: Generate shared pinyin keys before playlist pagination
 
 - Scope: playlist song pages, playback-position ID lists and permanent name sorting, songloft-org/songloft#524.

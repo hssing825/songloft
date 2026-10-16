@@ -50,7 +50,7 @@
 - 📱 **Cross-platform clients** — The Flutter client supports six platforms: Android, iOS, macOS, Windows, Linux, and Web
 - 📦 **Bundle local mode** — The client embeds the Go backend, so no server deployment is needed — play your local music directly on your phone or computer
 - 📺 **Kodi plugin client** — Supports big-screen devices like Xbox, Apple TV, Raspberry Pi, and Android TV, optimized for remote control operation for a smooth living-room media experience
-- 🌐 **Web interface** — The full edition ships with a built-in web frontend that works out of the box
+- 🌐 **Web interface** — The full edition embeds Lynx Web with root and subpath deployment support out of the box
 - 🔑 **JWT authentication** — Dual-token mechanism (Access Token + Refresh Token) with multi-device management
 - 📡 **Network songs & radio** — Add network audio URLs and radio streams, transparently cached to the server during playback
 - 🔌 **Full REST API** — Built-in Swagger documentation for easy integration and further development

@@ -6,6 +6,7 @@ This directory contains automation scripts for the Songloft backend, covering ve
 
 | Script | Purpose |
 |--------|---------|
+| `build-embedded-web.mjs` | Builds full-edition Lynx Web, separates parent/client identities, applies engine patches and precompresses assets |
 | `release-all.sh` | One-command release: Flutter client → Lynx client → commit submodule pointers → parent backend (the same argument set is forwarded to all three bump scripts) |
 | `bump-version.sh` | Bumps `VERSION` in `Makefile` and the Swagger `@version` in `main.go`, then commits + tags + atomically pushes (once the tag is pushed, the release workflow takes over). Shares the **unified release contract** with both client repos' bump scripts |
 | `submodule-update.sh` | Batch-syncs all git submodules to the latest main |

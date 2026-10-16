@@ -6,6 +6,7 @@
 
 | 脚本 | 作用 |
 |------|------|
+| `build-embedded-web.mjs` | 构建完整版 Lynx Web，隔离父/子仓库版本，应用引擎补丁并生成 Brotli/gzip 资源 |
 | `release-all.sh` | 一键发布：Flutter 客户端 → Lynx 客户端 → 提交子模块引用 → 父仓库后端（同一组参数透传给三个 bump 脚本） |
 | `bump-version.sh` | 升级 `Makefile` 的 `VERSION` 与 `main.go` 的 Swagger `@version`，commit + tag + 原子 push（push tag 后由 release workflow 接管发布）。与两个客户端仓库的 bump 脚本共享**统一发布契约** |
 | `submodule-update.sh` | 批量同步所有 git 子模块到最新 main |

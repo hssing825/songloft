@@ -52,7 +52,7 @@ Holds the project's core business logic, organized by functional module:
 - `routers.go`: Route configuration and registration, defining all API routes and the middleware chain
 - `router_dev.go`: Development routes (includes Swagger, `-tags dev`)
 - `router_prod.go`: Production routes (excludes Swagger)
-- `embed.go`: Flutter Web frontend static asset serving, with SPA route fallback (returns `index.html` when the requested file does not exist)
+- `embed.go`: Lynx Web frontend static asset serving, with SPA route fallback (returns `index.html` when the requested file does not exist)
 - `access_log.go`: HTTP access-log middleware
 - `compress.go`: Response compression middleware
 - `db_migration.go`: Wrapper that runs goose database migrations on startup
@@ -231,7 +231,7 @@ Holds reusable public packages:
 |------|------|------|
 | `dev` | Development mode | Includes Swagger docs + pprof |
 | `lite` | Lite mode | Does not embed the frontend, smaller binary |
-| No tag | Full mode (default) | Embeds the Flutter Web build output into the binary |
+| No tag | Full mode (default) | Embeds the Lynx Web build output into the binary |
 
 ### Frontend Embedding Mechanism
 

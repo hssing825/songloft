@@ -8,8 +8,8 @@ import (
 	"testing"
 )
 
-// Cross-Origin-Resource-Policy 是 Lynx Web 端的一个跨仓库契约：那边的宿主页必须开
-// COEP: require-corp（web-core 依赖 SharedArrayBuffer，不开就白屏），于是这边每个被
+// Cross-Origin-Resource-Policy 是启用了跨源隔离的 Lynx Web 宿主的跨仓库契约。
+// 宿主选择 COEP: require-corp 时，这边每个被
 // <img>/<audio>/<video> 以 no-cors 模式取用的响应都必须声明可被嵌入，否则浏览器阻断。
 //
 // 它值得闸门而不只是注释，是因为两种坏法都不出声：

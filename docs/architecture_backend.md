@@ -52,7 +52,7 @@ HTTP Server (main.go)
 - `routers.go`: 路由配置和注册，定义所有 API 路由及中间件链
 - `router_dev.go`: 开发环境路由（包含 Swagger，`-tags dev`）
 - `router_prod.go`: 生产环境路由（不包含 Swagger）
-- `embed.go`: Flutter Web 前端静态资源服务，支持 SPA 路由回退（请求文件不存在时返回 `index.html`）
+- `embed.go`: Lynx Web 前端静态资源服务，支持 SPA 路由回退（请求文件不存在时返回 `index.html`）
 - `access_log.go`: HTTP 访问日志中间件
 - `compress.go`: 响应压缩中间件
 - `db_migration.go`: 启动时执行 goose 数据库迁移的封装
@@ -231,7 +231,7 @@ HTTP Server (main.go)
 |------|------|------|
 | `dev` | 开发模式 | 包含 Swagger 文档 + pprof |
 | `lite` | 精简模式 | 不嵌入前端，体积更小 |
-| 无标签 | 完整模式（默认） | 嵌入 Flutter Web 构建产物到二进制 |
+| 无标签 | 完整模式（默认） | 嵌入 Lynx Web 构建产物到二进制 |
 
 ### 前端嵌入机制
 

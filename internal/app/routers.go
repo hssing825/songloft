@@ -464,8 +464,9 @@ func (a *App) setupBaseRouter() {
 // corpMiddleware 给所有响应加上 Cross-Origin-Resource-Policy: cross-origin，
 // 让浏览器允许在开了 COEP: require-corp 的页面里嵌入本服务的资源。
 //
-// 为什么必须有：Lynx Web 端的宿主页必须开 COOP/COEP —— @lynx-js/web-core 依赖
-// SharedArrayBuffer + Atomics 且没有降级检测，不开就整页白屏。而 COEP: require-corp
+// 适用场景：独立 Lynx Web 开发服务器等宿主可选择开启 COOP/COEP。
+// 当前 web-core 0.23.1 的内部 RPC 均为异步，完整版并不强制隔离或 HTTPS。
+// 但已开启隔离的宿主仍需要这些资源头。COEP: require-corp
 // 要求每个跨源子资源显式声明「我可以被嵌入」，否则浏览器直接阻断，报
 // ERR_BLOCKED_BY_RESPONSE.NotSameOriginAfterDefaultedToSameOriginByCoep。
 //

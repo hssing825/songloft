@@ -46,7 +46,7 @@ Server Mode supports Flutter, ReactLynx, official Electron Desktop, and Android 
 │  │ JSPlugin │ │JS Runtime│ │  Cache   │                    │
 │  │ Manager  │ │ (QuickJS)│ │ Service  │                    │
 │  └──────────┘ └──────────┘ └──────────┘                    │
-│  Static: embed.FS (Flutter Web) + SPA routing fallback      │
+│  Static: embed.FS (Lynx Web) + SPA routing fallback      │
 │  Monitoring: Tracely (heartbeat + install/upgrade stats + panic capture) │
 └──────────────────────────────────────────────────────────────┘
                         │
@@ -92,7 +92,7 @@ Server Mode supports Flutter, ReactLynx, official Electron Desktop, and Android 
 ```
 songloft/
 ├── main.go                     # Main program entry point
-├── web_embed.go                # Full build (embeds Flutter Web, build tag: !lite)
+├── web_embed.go                # Full build (embeds Lynx Web, build tag: !lite)
 ├── web_embed_lite.go           # Lite build (empty embed.FS, build tag: lite)
 ├── mobile/                     # gomobile binding entry (Bundle Local Mode)
 │   └── mobile.go               # Exports Start/Stop/IsRunning/GetPort for mobile calls
@@ -122,7 +122,7 @@ songloft/
 │   │       ├── features/       # Feature modules (auth / startup / home / library / player / playlist / settings / jsplugin / dlna)
 │   │       └── shared/         # Shared layouts, models, components
 │   ├── player-lynx/            # Lynx client (submodule)
-│   ├── player-build/           # Flutter Web build artifacts (go:embed)
+│   ├── player-build/           # Lynx Web build artifacts (go:embed)
 │   └── tv/                     # Android TV client (submodule)
 ├── plugins/                    # Plugin ecosystem
 │   ├── toolchain/              # JS plugin development toolchain (SDK + Builder + scaffolding)
@@ -143,7 +143,7 @@ songloft/
 | Command | Tag | Description |
 |------|------|------|
 | `make run` | `-tags dev` | Development mode, includes Swagger, embeds the frontend |
-| `make build-prod` | No tag | Production full build (default), embeds Flutter Web |
+| `make build-prod` | No tag | Production full build (default), embeds Lynx Web |
 | `make build-prod-lite` | `-tags lite` | Production lite build, without the frontend |
 | `make build-go-mobile-android` | `-tags lite` | Compiles the Go backend into an Android .aar (gomobile bind) |
 | `make build-go-mobile-ios` | `-tags lite` | Compiles the Go backend into an iOS .xcframework (gomobile bind) |

@@ -512,8 +512,7 @@ func (m *Manager) tryServeStaticFile(w http.ResponseWriter, r *http.Request, sta
 		content = injectHTMLHead(content, entryPath, m.basePath)
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.Header().Set("Cache-Control", "no-cache")
-		// COEP: require-corp 页面（Lynx Web 宿主页必须开——web-core 的
-		// SharedArrayBuffer 依赖）里嵌跨源 iframe 时，iframe 文档响应自身也
+		// 主动启用了 COEP: require-corp 的宿主页嵌跨源 iframe 时，文档响应自身也
 		// 必须携带 COEP 头，否则 Chrome/Firefox 报 ERR_BLOCKED_BY_RESPONSE
 		// 拒绝加载。corpMiddleware 的 CORP 头只覆盖子资源（img/audio），盖
 		// 不住 iframe 文档这一层，所以插件 HTML 要单独补。

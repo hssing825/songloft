@@ -32,7 +32,7 @@ LDFLAGS=-s -w \
 # 构建标签说明：
 #   dev  - 开发模式（含 Swagger + pprof）
 #   lite - 精简版（不嵌入前端资源）
-# 默认（无标签）= 完整版（嵌入 Flutter Web 前端）
+# 默认（无标签）= 完整版（嵌入 Lynx Web 前端）
 # 使用 -tags "tag1 tag2" 语法组合多个标签
 #
 # VERSION=dev 时自动启用 dev 编译标签（Swagger + pprof）
@@ -59,11 +59,15 @@ help: ## 显示帮助信息
 	@echo ""
 
 .PHONY: build-frontend-web-embedded
-build-frontend-web-embedded: ## 构建 Flutter Web（嵌入模式）：隐藏 API 地址 UI，输出至 clients/player-build/web-embedded
+build-frontend-web-embedded: ## 构建 Lynx Web（嵌入模式）：隐藏 API 地址 UI，输出至 clients/player-build/web-embedded
+	@VERSION=$(VERSION) GIT_COMMIT=$(GIT_COMMIT) BUILD_TIME=$(BUILD_TIME) node scripts/build-embedded-web.mjs $(if $(OUTPUT_DIR),"$(OUTPUT_DIR)",clients/player-build)
+
+.PHONY: build-frontend-flutter-web-embedded
+build-frontend-flutter-web-embedded: ## 构建旧 Flutter Web 嵌入版（会覆盖同目录的 Lynx 产物）
 	@$(FRONTEND_ENV) bash clients/player/scripts/build-frontend.sh web-embedded $(if $(OUTPUT_DIR),$(OUTPUT_DIR),clients/player-build)
 
 .PHONY: build-frontend-web-embedded-debug
-build-frontend-web-embedded-debug: ## 构建 Flutter Web（嵌入模式，含 source map）：仅本地调试用，产物体积会显著增大
+build-frontend-web-embedded-debug: ## 构建旧 Flutter Web 嵌入调试版（含 source map，非默认完整版前端）
 	@$(FRONTEND_ENV) DEBUG=1 bash clients/player/scripts/build-frontend.sh web-embedded $(if $(OUTPUT_DIR),$(OUTPUT_DIR),clients/player-build)
 
 .PHONY: build-frontend-web
