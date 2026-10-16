@@ -76,7 +76,7 @@ export function buildEmbeddedWeb({ root = repoRoot, outputRoot = "clients/player
   const buildEnv = { ...preparedEnv, SONGLOFT_BUILD_METADATA: metadataPath };
   run("pnpm", ["exec", "rspeedy", "build", "--environment", "web"], buildEnv);
   verifyWebBundle(join(client, "dist/web/main.web.bundle"));
-  const copyArgs = ["scripts/copy-bundle-web.mjs", "--embedded"];
+  const copyArgs = ["scripts/copy-bundle-web.mjs", "--embedded", "--go-embed"];
   // The client's default path supports replacing legacy Flutter output. Custom
   // paths retain its marker-based protection against deleting unrelated files.
   if (destination !== join(root, "clients/player-build/web-embedded")) {
