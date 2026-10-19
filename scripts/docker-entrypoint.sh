@@ -67,7 +67,11 @@ compare_versions() {
 get_version() {
     binary_path="$1"
     if [ -f "$binary_path" ]; then
-        "$binary_path" -version 2>&1 | grep "Songloft Version:" | awk '{print $3}'
+        if version_output=$("$binary_path" -version 2>&1); then
+            echo "$version_output" | grep "Songloft Version:" | awk '{print $3}'
+        else
+            echo "unknown"
+        fi
     else
         echo "unknown"
     fi
@@ -109,7 +113,12 @@ print_version_info() {
     binary_path="$2"
     if [ -f "$binary_path" ]; then
         echo "--- $label ---"
-        "$binary_path" -version 2>&1
+        # 损坏、错架构或缺少动态链接器时也要继续，让下方 unknown 分支恢复底包。
+        if version_output=$("$binary_path" -version 2>&1); then
+            echo "$version_output"
+        else
+            echo "⚠ 无法执行 $binary_path -version：$version_output"
+        fi
         echo "------------------"
     fi
 }

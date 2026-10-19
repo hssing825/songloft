@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"debug/elf"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -9,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -313,13 +315,29 @@ func (s *UpgradeService) getBaseImageBuildType() string {
 }
 
 // getPlatformSuffix 获取当前平台的二进制文件后缀
-func (s *UpgradeService) getPlatformSuffix() string {
-	// 当前只支持 Linux amd64（Docker 环境）
-	suffix := "-linux-amd64"
-	if s.getBaseImageBuildType() == "lite" {
+func (s *UpgradeService) getPlatformSuffix() (string, error) {
+	return upgradePlatformSuffix(runtime.GOOS, runtime.GOARCH, s.getBaseImageBuildType())
+}
+
+func upgradePlatformSuffix(goos, goarch, buildType string) (string, error) {
+	if goos != "linux" {
+		return "", fmt.Errorf("unsupported upgrade platform: %s/%s", goos, goarch)
+	}
+	// 与 release.yml 的产物命名保持一致；Docker 的 32 位 ARM 镜像为 v7。
+	var arch string
+	switch goarch {
+	case "amd64", "arm64":
+		arch = goarch
+	case "arm":
+		arch = "armv7"
+	default:
+		return "", fmt.Errorf("unsupported upgrade platform: %s/%s", goos, goarch)
+	}
+	suffix := "-linux-" + arch
+	if buildType == "lite" {
 		suffix += "-lite"
 	}
-	return suffix
+	return suffix, nil
 }
 
 // DownloadBinary 下载二进制文件
@@ -328,7 +346,11 @@ func (s *UpgradeService) DownloadBinary(urlPrefix, targetPath, proxyPrefix strin
 	s.updateProgress(models.UpgradeStatusDownloading, 0, "正在下载新版本...")
 
 	// 根据平台拼接完整的下载 URL
-	rawURL := urlPrefix + s.getPlatformSuffix()
+	suffix, err := s.getPlatformSuffix()
+	if err != nil {
+		return err
+	}
+	rawURL := urlPrefix + suffix
 
 	// 创建临时文件
 	out, err := os.Create(targetPath)
@@ -375,42 +397,41 @@ func (s *UpgradeService) DownloadBinary(urlPrefix, targetPath, proxyPrefix strin
 // TestBinary 测试二进制文件是否可用
 func (s *UpgradeService) TestBinary(binaryPath string) error {
 	s.updateProgress(models.UpgradeStatusTesting, 0, "正在测试新版本...")
-
-	// 设置可执行权限
-	if err := os.Chmod(binaryPath, 0755); err != nil {
-		return fmt.Errorf("failed to set executable permission: %w", err)
-	}
-
-	// 执行 -help 命令测试
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	cmd := exec.CommandContext(ctx, binaryPath, "-help")
-	if err := cmd.Run(); err != nil {
-		// -help 命令通常会返回非零退出码，这是正常的
-		// 只要命令能执行就说明二进制文件可用
-		if ctx.Err() == context.DeadlineExceeded {
-			return fmt.Errorf("binary test timeout")
-		}
-	}
-
-	return nil
+	return s.ValidateBinary(binaryPath)
 }
 
 // ValidateBinary 验证二进制文件可执行（不更新进度，用于上传阶段的预检）
 func (s *UpgradeService) ValidateBinary(binaryPath string) error {
+	// 即使宿主注册了跨架构模拟器，也不能把异架构文件写入容器数据卷。
+	f, err := elf.Open(binaryPath)
+	if err != nil {
+		return fmt.Errorf("invalid Linux upgrade binary: %w", err)
+	}
+	header := f.FileHeader
+	f.Close()
+	var machine elf.Machine
+	var class elf.Class
+	switch runtime.GOARCH {
+	case "amd64":
+		machine, class = elf.EM_X86_64, elf.ELFCLASS64
+	case "arm64":
+		machine, class = elf.EM_AARCH64, elf.ELFCLASS64
+	case "arm":
+		machine, class = elf.EM_ARM, elf.ELFCLASS32
+	default:
+		return fmt.Errorf("unsupported upgrade architecture: %s", runtime.GOARCH)
+	}
+	if header.Machine != machine || header.Class != class {
+		return fmt.Errorf("upgrade binary architecture mismatch: got %s/%s, need linux/%s", header.Machine, header.Class, runtime.GOARCH)
+	}
+
 	if err := os.Chmod(binaryPath, 0755); err != nil {
 		return fmt.Errorf("failed to set executable permission: %w", err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	cmd := exec.CommandContext(ctx, binaryPath, "-help")
-	if err := cmd.Run(); err != nil {
-		if ctx.Err() == context.DeadlineExceeded {
-			return fmt.Errorf("binary test timeout")
-		}
+	// -version 必须正常退出且输出 Songloft 版本；执行失败和非零退出都拒绝。
+	if _, err := s.ExtractBinaryInfo(binaryPath); err != nil {
+		return fmt.Errorf("binary validation failed: %w", err)
 	}
 
 	return nil

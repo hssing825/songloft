@@ -10,6 +10,16 @@
 
 ## 条目
 
+### DOCKER-001：在线升级必须按运行架构选包，并在替换前拒绝执行失败
+
+- 范围：Docker 在线/上传升级和启动时底包恢复，songloft-org/songloft；无关联 Issue。
+- 失败证据：2026-10-19，基线 `341b49695b3a7763c2ead5e5b43f228d0dcbd3de` 的下载后缀写死 `linux-amd64`，ARM 镜像因此选错包；`TestBinary` / `ValidateBinary` 忽略除超时外的所有执行错误。隔离旧实现后，错架构、HTML、截断、非零退出和无版本输出的回归均失败。Linux amd64 Docker 用修改 ELF machine 的本地文件复现：显示升级完成、文件被替换，随后重启循环；启动脚本在打印坏文件版本时受 `set -e` 影响，尚未进入 unknown 恢复分支就退出。
+- 规则与修复：用运行程序的 `runtime.GOOS/GOARCH` 对齐 Release 的 `linux-amd64/linux-arm64/linux-armv7` 命名，保留底包 full/lite 选择；替换前检查 ELF machine/class，并要求 `-version` 成功退出且含 Songloft 版本。在线和上传确认共用校验，失败不备份、不替换、不重启。启动脚本不信任失败的版本命令，诊断输出失败不阻断底包恢复。
+- Done right：本次未提交工作树，Linux amd64 / Go 1.26.0；`CGO_ENABLED=0 go test -tags dev,lite ./...`、同标签 `go vet ./...`、定向 `CGO_ENABLED=1 go test -race` 与 52 项 `node --test scripts/tests/*.test.mjs` 通过；arm64、armv7 的服务测试交叉编译通过。真实 Docker 验证坏架构/HTML 被拒绝且旧文件哈希不变、零重启，lite 正常升级和 PUID/PGID=1000 升级后进程版本正确，以及坏文件恢复底包。Docker Chrome 实际登录、点击设置→关于与更新→升级，full 服务重启一次后返回目标 commit，落盘文件 SHA-256 与候选一致，刷新后显示已是最新。
+- 证据：`/tmp/songloft-docker-upgrade-20261019/` 中的 `regression-{before,after}.log`、`entrypoint-{before,after}.log`、`backend-tests.log`、`vet.log`、`race.log`、`scripts.log`、`docker-results.json`、`browser-result.json`、`browser-upgrade.png` 和 `validation.json`。旧启动脚本在新增恢复回归中失败 2 项，修复后通过；下载通过本地 GitHub 代理夹具提供，非线上发布包验收。
+- Not run：ARM 真机、ARM 容器实际运行和正式发布/远端 CI；后缀矩阵及交叉编译不替代 ARM 实机升级。既有故障实例可先停止容器，保留数据库并将 data 卷的 `songloft` 可执行文件改名备份，再启动从镜像底包初始化。
+- Seen 1× (2026-10-19)。状态：经验；正式发布与 ARM 实机验收另行核对。
+
 ### WEB-001：依赖中存在 SharedArrayBuffer 不等于页面必须启用跨源隔离
 
 - 范围：完整版嵌入 Lynx Web 的部署评估，songloft-org/songloft 与 songloft-org/songloft-player-lynx；无关联 Issue。

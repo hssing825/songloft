@@ -1,11 +1,149 @@
 package services
 
 import (
+	"encoding/binary"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"runtime"
+	"strings"
 	"testing"
 
 	"songloft/internal/models"
 	"songloft/internal/version"
 )
+
+func TestUpgradePlatformSuffix(t *testing.T) {
+	for arch, suffix := range map[string]string{"amd64": "amd64", "arm64": "arm64", "arm": "armv7"} {
+		for _, buildType := range []string{"", "full", "lite"} {
+			t.Run(arch+"/"+buildType, func(t *testing.T) {
+				want := "-linux-" + suffix
+				if buildType == "lite" {
+					want += "-lite"
+				}
+				got, err := upgradePlatformSuffix("linux", arch, buildType)
+				if err != nil || got != want {
+					t.Fatalf("suffix = %q, %v; want %q", got, err, want)
+				}
+			})
+		}
+	}
+	for _, platform := range [][2]string{{"linux", "386"}, {"linux", "riscv64"}, {"darwin", "arm64"}} {
+		if _, err := upgradePlatformSuffix(platform[0], platform[1], "full"); err == nil {
+			t.Fatalf("unsupported platform %v should fail", platform)
+		}
+	}
+}
+
+func TestDownloadBinaryUsesRuntimePlatformAndBaseImageBuildType(t *testing.T) {
+	if runtime.GOOS != "linux" {
+		t.Skip("Docker upgrades require Linux")
+	}
+	arch := runtime.GOARCH
+	if arch == "arm" {
+		arch = "armv7"
+	}
+	for _, buildType := range []string{"full", "lite"} {
+		t.Run(buildType, func(t *testing.T) {
+			wantPath := "/songloft-linux-" + arch
+			if buildType == "lite" {
+				wantPath += "-lite"
+			}
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if r.URL.Path != wantPath {
+					t.Errorf("download path = %q; want %q", r.URL.Path, wantPath)
+					w.WriteHeader(http.StatusNotFound)
+					return
+				}
+				_, _ = w.Write([]byte("release fixture"))
+			}))
+			defer server.Close()
+			svc := NewUpgradeService()
+			svc.baseImageBuildTypeOnce.Do(func() { svc.baseImageBuildType = buildType })
+			target := filepath.Join(t.TempDir(), "songloft.new")
+			if err := svc.DownloadBinary(server.URL+"/songloft", target, ""); err != nil {
+				t.Fatal(err)
+			}
+			data, err := os.ReadFile(target)
+			if err != nil || string(data) != "release fixture" {
+				t.Fatalf("downloaded data = %q, %v", data, err)
+			}
+		})
+	}
+}
+
+func TestUpgradeBinaryValidation(t *testing.T) {
+	if runtime.GOOS != "linux" {
+		t.Skip("Docker upgrades require Linux ELF binaries")
+	}
+	dir := t.TempDir()
+	source := filepath.Join(dir, "probe.go")
+	// 真正的可执行文件，覆盖 exec 失败、非零退出、超时和版本解析。
+	if err := os.WriteFile(source, []byte(`package main
+import ("fmt"; "os"; "time")
+func main() {
+    mode := os.Getenv("SONGLOFT_TEST_UPGRADE_MODE")
+    if mode == "timeout" { time.Sleep(30 * time.Second) }
+    if mode == "invalid-version" { fmt.Println("some other program"); return }
+    fmt.Println("Songloft Version: dev\nBuild Type: full")
+    if mode == "exit-error" { os.Exit(2) }
+}`), 0600); err != nil {
+		t.Fatal(err)
+	}
+	probe := filepath.Join(dir, "probe")
+	cmd := exec.Command("go", "build", "-o", probe, source)
+	cmd.Env = append(os.Environ(), "CGO_ENABLED=0")
+	if output, err := cmd.CombinedOutput(); err != nil {
+		t.Fatalf("build probe: %v\n%s", err, output)
+	}
+	native, err := os.ReadFile(probe)
+	if err != nil {
+		t.Fatal(err)
+	}
+	foreign := append([]byte(nil), native...)
+	// 替换为另一种机器类型，确保即使装了 binfmt/QEMU 也必须拒绝。
+	machine := uint16(183) // EM_AARCH64
+	if runtime.GOARCH == "arm64" {
+		machine = 62 // EM_X86_64
+	}
+	binary.LittleEndian.PutUint16(foreign[18:20], machine)
+
+	svc := NewUpgradeService()
+	for name, validate := range map[string]func(string) error{"online": svc.TestBinary, "upload": svc.ValidateBinary} {
+		t.Run(name, func(t *testing.T) {
+			for _, tc := range []struct {
+				name, mode string
+				data       []byte
+				wantError  bool
+			}{
+				{name: "valid", data: native},
+				{name: "wrong-architecture", data: foreign, wantError: true},
+				{name: "html-response", data: []byte("<html>proxy error</html>"), wantError: true},
+				{name: "truncated", data: native[:32], wantError: true},
+				{name: "nonzero-exit", mode: "exit-error", data: native, wantError: true},
+				{name: "invalid-version", mode: "invalid-version", data: native, wantError: true},
+				{name: "timeout", mode: "timeout", data: native, wantError: true},
+			} {
+				t.Run(tc.name, func(t *testing.T) {
+					t.Setenv("SONGLOFT_TEST_UPGRADE_MODE", tc.mode)
+					path := filepath.Join(t.TempDir(), "songloft.new")
+					if err := os.WriteFile(path, tc.data, 0600); err != nil {
+						t.Fatal(err)
+					}
+					err := validate(path)
+					if (err != nil) != tc.wantError {
+						t.Fatalf("validation error = %v; wantError = %v", err, tc.wantError)
+					}
+					if tc.name == "wrong-architecture" && err != nil && !strings.Contains(err.Error(), "architecture mismatch") {
+						t.Fatalf("expected architecture mismatch, got %v", err)
+					}
+				})
+			}
+		})
+	}
+}
 
 func withVersionInfo(t *testing.T, versionValue, gitCommit, buildTime, buildType string) {
 	t.Helper()
