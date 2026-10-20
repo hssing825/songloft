@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [v2.13.5] - 2026-10-20
+### :bug: Bug Fixes
+- [`909349e`](https://github.com/songloft-org/songloft/commit/909349e08f430d472f84d4a9c33397e2e07aefbc) - **android**: 同步启动修复并校验各架构 Bundle JNI *(commit by [@hanxi](https://github.com/hanxi))*
+
+### :memo: Documentation Changes
+- [`ebd9bc4`](https://github.com/songloft-org/songloft/commit/ebd9bc42f1d2fe9a6a39be58437fba719a5a6a05) - update CHANGELOG for v2.13.4 *(commit by [@github-actions[bot]](https://github.com/apps/github-actions))*
+
+### :wrench: Chores
+- [`1a7f325`](https://github.com/songloft-org/songloft/commit/1a7f3250daec95d49cf7f5ca35fb08c1067352a8) - **player**: 同步电台断流重连修复 *(PR [#531](https://github.com/songloft-org/songloft/pull/531) by [@hanxi](https://github.com/hanxi))*
+- [`c74d824`](https://github.com/songloft-org/songloft/commit/c74d82412337e44f64ec1587f55bd1f9e3e4f955) - **lynx**: 同步电台断流重连修复 *(PR [#531](https://github.com/songloft-org/songloft/pull/531) by [@hanxi](https://github.com/hanxi))*
+- [`c3c8811`](https://github.com/songloft-org/songloft/commit/c3c8811dfda76826b1dffbf0c0dab13529005bb3) - **lynx**: 同步电台更新兼容门控 *(PR [#531](https://github.com/songloft-org/songloft/pull/531) by [@hanxi](https://github.com/hanxi))*
+- [`efeb05f`](https://github.com/songloft-org/songloft/commit/efeb05f6566fd31ec67bb9df24ff0cc1332c59c2) - **clients**: 同步 Flutter 与 Lynx 客户端发布版本 *(commit by [@hanxi](https://github.com/hanxi))*
+- [`2dbf698`](https://github.com/songloft-org/songloft/commit/2dbf69864a597f3b1cb5530708252f337508f509) - release version 2.13.5 *(commit by [@hanxi](https://github.com/hanxi))*
+
+
 ## [v2.13.4] - 2026-10-20
 ### :sparkles: New Features
 - [`cd8e75b`](https://github.com/songloft-org/songloft/commit/cd8e75b4232c0e68b84b3e006559fe799e673261) - **web**: 完整版默认嵌入 Lynx Web *(commit by [@hanxi](https://github.com/hanxi))*
@@ -2252,3 +2267,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [v2.13.1]: https://github.com/songloft-org/songloft/compare/v2.13.0...v2.13.1
 [v2.13.3]: https://github.com/songloft-org/songloft/compare/v2.13.1...v2.13.3
 [v2.13.4]: https://github.com/songloft-org/songloft/compare/v2.13.3...v2.13.4
+[v2.13.5]: https://github.com/songloft-org/songloft/compare/v2.13.4...v2.13.5
