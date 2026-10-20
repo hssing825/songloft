@@ -10,6 +10,15 @@
 
 ## 条目
 
+### JSPLUG-002：客户端 SDK 的方法存在不等于宿主传输可用
+
+- 范围：公共资源 `internal/jsplugin/assets/common.js` 的 Flutter / Lynx / iframe 宿主桥；无关联 Issue，基线 `32ca05ccab18a68133ab1ccb776460610c835726`。
+- 证据：2026-10-20，旧 `isHostAvailable/invokeHost` 只识别 Flutter callHandler 与 iframe，Lynx 原生顶层 WebView 即使已有业务分发器，仍判定为无宿主。新真实脚本回归在隔离旧资源下失败 5 项、保留 Flutter/iframe 2 项通过。
+- 规则与修复：按宿主实际入口分别接 Android `LynxWebViewBridge`、iOS `webkit.messageHandlers.nativeApp`、HarmonyOS `LynxJSBridge`，再验证带请求 ID 的成功/错误回执、超时清理和状态退订。不能只 mock 分发器便宣称 SDK 可用；原生壳、公共资源与客户端分发器分别核对。
+- Done right：未提交工作树下 `node --test scripts/tests/plugin-client-bridge.test.mjs scripts/tests/plugin-theme-appearance.test.mjs` 9 项通过，`go test ./internal/jsplugin` 通过。Lynx 的完整接口、实际商店插件和平台验收记录见子仓库 `docs/reference/plugin-client-sdk.md`；原生 URL 参数只由嵌入页添加，外部浏览器入口不带该标记。
+- Not run：iOS/HarmonyOS 编译及三端原生设备 Cookie store；受控消息入口不替代原生页面验收。
+- Seen 1× (2026-10-20)。状态：经验；未提交、推送或发布。
+
 ### JSPLUG-001：常驻插件的后台 pump 不能用固定周期轮询推进异步链
 
 - 范围：`internal/jsplugin` 的后台定时器协程与 `internal/jsruntime` 的异步唤醒通道，影响所有常驻 JS 插件；失败实例为 [songloft-org/songloft-plugin-miot#119](https://github.com/songloft-org/songloft-plugin-miot/issues/119)。

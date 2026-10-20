@@ -10,6 +10,15 @@ Evidence-backed lessons for the parent and public host contracts; see the [AI wo
 
 ## Entries
 
+### JSPLUG-002: SDK methods can exist while the host transport remains unavailable
+
+- Scope: Flutter / Lynx / iframe host bridges in shared `internal/jsplugin/assets/common.js`; no linked Issue, baseline `32ca05ccab18a68133ab1ccb776460610c835726`.
+- Evidence: On 2026-10-20, the old availability/dispatch logic only recognized Flutter callHandler and iframe transport. A native top-level Lynx WebView therefore appeared hostless even with business dispatch implemented. Actual-script regressions against an isolated old asset failed 5 cases while the 2 Flutter/iframe cases passed.
+- Rule and fix: Wire actual Android `LynxWebViewBridge`, iOS `webkit.messageHandlers.nativeApp` and HarmonyOS `LynxJSBridge` entry points, then verify correlated success/error replies, timeout cleanup and state unsubscription. Mocking dispatch alone cannot establish SDK availability; check native shells, shared assets and client dispatch separately.
+- Done right: In the uncommitted tree, `node --test scripts/tests/plugin-client-bridge.test.mjs scripts/tests/plugin-theme-appearance.test.mjs` passes 9 tests; `go test ./internal/jsplugin` passes. Full Lynx interfaces, actual store-plugin checks and platform boundaries appear in its `docs/reference/plugin-client-sdk.md`. Only embedded native URLs carry the transport marker; external-browser URLs omit it.
+- Not run: iOS/HarmonyOS compilation and native cookie-store acceptance on all three platforms; controlled message endpoints do not replace native-page acceptance.
+- Seen 1× (2026-10-20). Status: lesson; not committed, pushed or released.
+
 ### JSPLUG-001: Never advance resident-plugin async chains on a fixed polling period
 
 - Scope: the background timer goroutine in `internal/jsplugin` and the async wake channel in `internal/jsruntime`, affecting every resident JS plugin. Failure instance: [songloft-org/songloft-plugin-miot#119](https://github.com/songloft-org/songloft-plugin-miot/issues/119).

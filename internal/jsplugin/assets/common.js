@@ -583,12 +583,12 @@
         initAccessibility();
     }
 
-    // ── 宿主客户端桥接（仅 Flutter 客户端 webview 有效）──
+    // ── 宿主客户端桥接（Flutter / Lynx WebView 和 Web iframe）──
     //
     // 让 webview 打开的插件页调用 Flutter 宿主能力（改写正在播放队列、播放控制、
     // 状态订阅等）。请求走 flutter_inappwebview 的 callHandler（原生 Promise 返回值），
     // 事件（播放状态变更）复用上面的 postMessage 通道。
-    // Web/iframe 或无原生桥接时优雅降级：isHostAvailable() 返回 false，调用会 reject。
+    // 独立浏览器页面无宿主时 isHostAvailable() 返回 false，调用会 reject。
 
     var HOST_HANDLER = 'songloftHost';
     var HOST_CALL_TIMEOUT_MS = 10000;
@@ -598,6 +598,11 @@
         return !!(window.flutter_inappwebview &&
             typeof window.flutter_inappwebview.callHandler === 'function');
     }
+
+    // The Lynx XElement browser has a message bridge instead of Flutter's callHandler.
+    // The host marks only its embedded URL; external browser URLs omit this flag.
+    var lynxHost = /(?:^|[?&])songloft_host=lynx(?:&|$)/.test(window.location.search);
+    function isLynxHost() { return lynxHost; }
 
     // Web：插件页运行在宿主 iframe 内，走 postMessage 与父窗口通信。
     // 独立浏览器标签（parent === self）没有宿主，返回 false。
@@ -610,7 +615,7 @@
     }
 
     function isHostAvailable() {
-        return isNativeHost() || isIframeHost();
+        return isNativeHost() || isLynxHost() || isIframeHost();
     }
 
     // ── Web/iframe postMessage 传输：请求/响应关联 ──
@@ -625,10 +630,27 @@
                 reject(new Error('songloft host call timeout: ' + ns + '.' + method));
             }, HOST_CALL_TIMEOUT_MS);
             hostPending[id] = { resolve: resolve, reject: reject, timer: timer };
-            window.parent.postMessage(
-                { type: 'songloft-host-call', id: id, ns: ns, method: method, params: params || null },
-                '*'
-            );
+            var message = { type: 'songloft-host-call', id: id, ns: ns, method: method, params: params || null };
+            try {
+                if (isLynxHost()) {
+                    var json = JSON.stringify(message);
+                    if (window.LynxWebViewBridge && typeof window.LynxWebViewBridge.onMessageReceived === 'function') {
+                        window.LynxWebViewBridge.onMessageReceived(json);
+                    } else if (window.LynxJSBridge && typeof window.LynxJSBridge.onMessageReceived === 'function') {
+                        window.LynxJSBridge.onMessageReceived(json);
+                    } else if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.nativeApp) {
+                        window.webkit.messageHandlers.nativeApp.postMessage(json);
+                    } else {
+                        throw new Error('songloft Lynx WebView bridge unavailable');
+                    }
+                } else {
+                    window.parent.postMessage(message, '*');
+                }
+            } catch (error) {
+                clearTimeout(timer);
+                delete hostPending[id];
+                reject(error);
+            }
         });
     }
 
@@ -655,7 +677,7 @@
                     throw new Error((res && res.error) || 'songloft host call failed');
                 });
         }
-        if (isIframeHost()) {
+        if (isLynxHost() || isIframeHost()) {
             return invokeViaPostMessage(ns, method, params);
         }
         return Promise.reject(new Error('songloft host bridge unavailable (not running in a Songloft client webview)'));
