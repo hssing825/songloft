@@ -748,6 +748,7 @@ jobs:
       - name: Compute native contract hash (bake asset)
         run: |
           cd clients/player
+          python3 -m unittest discover -s scripts/tests -p '*_test.py'
           HASHES=$(./scripts/compute_native_contract.sh \
             --export-surface ../mobile/export_surface.txt \
             --write-asset android/app/src/main/assets/native_contract.json)
@@ -779,6 +780,13 @@ jobs:
             --dart-define=FRONTEND_BUILD_TIME=${{ needs.prepare.outputs.build_time }} \
             --dart-define=FRONTEND_GIT_COMMIT=${{ needs.prepare.outputs.git_commit }} \
             --dart-define=FLUTTER_BINDING=${{ env.FLUTTER_VERSION }}
+
+      - name: Verify release SharedPreferences JNI runtime for all ABIs
+        working-directory: clients/player
+        run: |
+          for abi in arm64-v8a armeabi-v7a x86_64; do
+            python3 scripts/check-android-preferences-jni.py "build/app/outputs/flutter-apk/app-$abi-release.apk"
+          done
 
       - name: Collect APKs
         run: |
