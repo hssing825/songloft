@@ -500,26 +500,54 @@ func (s *JSService) stopTimerProcessor() {
 	}
 }
 
-// runTimerProcessor 独立 goroutine，周期性处理 JS 定时器。
-// 使用 TryLock 确保不阻塞 HTTP 请求处理。
+// 后台 pump 协程的唤醒参数。
+const (
+	// idleWakeInterval 是无异步结果、也无临近定时器时的兜底唤醒间隔。
+	idleWakeInterval = 500 * time.Millisecond
+	// minWakeInterval 给已到期但本轮没抢到 VM 锁的定时器设一个重试下限，
+	// 避免锁被长请求占用期间空转。与 JS 侧 setInterval 的 10ms 最小值一致。
+	minWakeInterval = 10 * time.Millisecond
+)
+
+// runTimerProcessor 独立 goroutine，推进常驻插件的异步链与定时器。
+//
+// 由异步结果到达（asyncSignal）即时唤醒，否则睡到下一个定时器到期为止；两者都
+// 没有时退回 idleWakeInterval 兜底。此前固定 500ms 轮询会让每个 await 的续作最多
+// 多等 500ms，AI 问答这种十几跳的链路会因此平白累积数秒延迟。
+// 使用 TryLock（在 ProcessTimers 内）确保不阻塞 HTTP 请求处理。
 func (s *JSService) runTimerProcessor(timerStop <-chan struct{}) {
-	ticker := time.NewTicker(500 * time.Millisecond)
-	defer ticker.Stop()
+	signal := s.jsManager.AsyncSignal(s.envID)
+	timer := time.NewTimer(idleWakeInterval)
+	defer timer.Stop()
 
 	for {
 		select {
-		case <-ticker.C:
-			// 如果定时器实际执行了，更新 lastActive 时间戳
-			// 这样有活跃定时器的插件不会被误判为空闲
-			if s.jsManager.ProcessTimers(s.envID) {
-				s.mu.Lock()
-				s.lastActive = time.Now()
-				s.mu.Unlock()
-			}
 		case <-timerStop:
 			return
+		case <-signal:
+		case <-timer.C:
 		}
+
+		// 如果定时器实际执行了，更新 lastActive 时间戳
+		// 这样有活跃定时器的插件不会被误判为空闲
+		if s.jsManager.ProcessTimers(s.envID) {
+			s.mu.Lock()
+			s.lastActive = time.Now()
+			s.mu.Unlock()
+		}
+
+		timer.Stop()
+		timer.Reset(s.nextWakeDelay())
 	}
+}
+
+// nextWakeDelay 返回下次兜底唤醒的间隔：有待执行定时器时睡到它到期，否则睡满空闲间隔。
+func (s *JSService) nextWakeDelay() time.Duration {
+	deadline := s.jsManager.GetNextTimerDeadline(s.envID)
+	if deadline.IsZero() {
+		return idleWakeInterval
+	}
+	return max(minWakeInterval, min(idleWakeInterval, time.Until(deadline)))
 }
 
 // HandleMessage 实现 MessageHandler 接口

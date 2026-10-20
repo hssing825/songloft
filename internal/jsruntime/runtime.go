@@ -458,6 +458,11 @@ func (m *JSEnvManager) executeInEnv(ctx context.Context, envID string, timeoutMs
 		return nil, err
 	}
 
+	// 插件代码在本次调用里注册的定时器（如 onInit 起后台轮询、onHTTPRequest 用
+	// setTimeout(fn, 0) 把任务甩到后台）对后台 pump 协程是不可见的，它可能正睡在
+	// 上一次算出的空闲间隔上。返回时唤醒一次，让它按新的定时器重算休眠时长。
+	defer signalAsync(env)
+
 	timeout := defaultJSTimeout
 	if timeoutMs > 0 {
 		timeout = time.Duration(timeoutMs) * time.Millisecond
@@ -1409,6 +1414,29 @@ func (m *JSEnvManager) GetNextTimerDeadline(envID string) time.Time {
 		return time.Time{}
 	}
 	return time.UnixMilli(ms)
+}
+
+// signalAsync 非阻塞唤醒该环境的事件循环 / 后台 pump 协程。通道容量为 1，
+// 已有待处理信号时直接丢弃：唤醒方醒来后会一次性 drain，合并不会丢工作。
+func signalAsync(env *JSEnv) {
+	select {
+	case env.asyncSignal <- struct{}{}:
+	default:
+	}
+}
+
+// AsyncSignal 返回环境的异步唤醒通道，供宿主侧后台 pump 协程监听。
+//
+// 该通道容量为 1、非阻塞投递，可能被 ExecuteJS 事件循环与后台 pump 协程同时消费。
+// 两者醒来后执行的是等价的 pump 工作，因此信号被对方"抢走"只影响这一方的唤醒
+// 延迟（各自的兜底 tick 会兜住），不影响正确性。
+// 环境不存在时返回 nil，调用方 select 到 nil 通道即永久阻塞，由停止信号负责退出。
+func (m *JSEnvManager) AsyncSignal(envID string) <-chan struct{} {
+	env, err := m.getEnv(envID)
+	if err != nil {
+		return nil
+	}
+	return env.asyncSignal
 }
 
 // processJobs 处理所有待执行的工作：异步桥接结果 + 原生 Promise 微任务 + 定时器回调。

@@ -10,6 +10,15 @@
 
 ## 条目
 
+### JSPLUG-001：常驻插件的后台 pump 不能用固定周期轮询推进异步链
+
+- 范围：`internal/jsplugin` 的后台定时器协程与 `internal/jsruntime` 的异步唤醒通道，影响所有常驻 JS 插件；失败实例为 [songloft-org/songloft-plugin-miot#119](https://github.com/songloft-org/songloft-plugin-miot/issues/119)。
+- 失败证据：2026-10-20，基线 `7c9f9f341865514d8e606bdb90e01ac92e148208` 的 `runTimerProcessor` 用固定 500ms ticker，脱离 `ExecuteJS` 的后台异步链每个 await 续作都要等下一个 tick。报告人[日志](https://github.com/songloft-org/songloft-plugin-miot/issues/119#issuecomment-6281088024)显示模型首字 `first_content_ms=1022`，播报下发却到 `speech_dispatch_ms=9499`；同一轮里 Go 侧 `doHTTPRequest` 的真实 RTT 为 848/294/103/245ms，而 JS 侧观测到的对应时刻是 43.652/44.151/47.145/47.644，全部落在 500ms 网格上。新增的 `TestTimerProcessor_BackgroundChainIsNotPumpBound` 在 overlay 隔离的旧实现下，10 跳链 2 秒只推进 4 跳而失败。
+- 规则与修复：pump 协程由 `asyncSignal` 即时唤醒，否则睡到 `GetNextTimerDeadline`，两者都没有才退回 500ms 兜底；下限 `minWakeInterval = 10ms`，避免已到期定时器在 VM 锁被长请求占用期间空转。`executeInEnv` 返回时 `signalAsync` 一次——插件在本次调用里新注册的定时器（`onInit` 起后台轮询、`onHTTPRequest` 用 `setTimeout(fn, 0)` 把任务甩到后台）对已经睡下的 pump 协程不可见。排查插件延迟时先把宿主侧网络时间戳与 JS 侧观测时刻对齐，差值落在固定网格上就是 pump 周期，不是上游慢。
+- Done right：Linux amd64 / Go 1.26.0 / Node 26.5.0，基线 `7c9f9f341865514d8e606bdb90e01ac92e148208` + 本次未提交工作树。`make check`（含 gofmt、`go vet`、全量 Go 测试）通过；新回归普通模式 `-count=20`、`-race -count=5` 均通过；用 `go test -overlay` 装回固定 ticker 的旧实现时按预期失败（2 秒 4/10 跳）。日志 `/tmp/songloft-119-20261020/go-{before,after,race}.log`。写回归时不能在等待期间调用插件：`InvokeHTTP` 走的 `ExecuteJS` 自带事件循环，会替 pump 协程把链推完，从而掩盖回归；耗时上限也不要绑死在 VM 实际速度上，按旧轮询网格的几分之一取值才在 `-race` 下稳定。
+- Not run：真实音箱与长期运行；端到端延迟收益来自日志推断，未在设备上复测。插件侧的配套改动见子仓库 MIOT-011。
+- Seen 1× (2026-10-20)。状态：经验；真机复验与发布另行核对。
+
 ### DOCKER-001：在线升级必须按运行架构选包，并在替换前拒绝执行失败
 
 - 范围：Docker 在线/上传升级和启动时底包恢复，songloft-org/songloft；无关联 Issue。
