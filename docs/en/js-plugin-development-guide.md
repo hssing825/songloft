@@ -363,6 +363,8 @@ The host supports the UPnP event subscription extension methods `SUBSCRIBE` and 
 
 To listen for SSDP multicast, use `songloft.net.udpBind({address: "0.0.0.0:1900", reuseAddress: true})`, followed by `udpJoinMulticast(socketId, "239.255.255.250")`. `reuseAddress` defaults to false and sets only `SO_REUSEADDR`; other sockets on that port must also allow reuse, or binding still fails. Older hosts ignore this option. Declare the `net` permission and close the socket when disabled. Active UDP sockets prevent idle eviction of the plugin.
 
+Outbound TCP connections use `songloft.net.tcpConnect(host, port, options?)`, returning a socket handle with `send()/onData()/onClose()/close()`, also requiring the `net` permission. Data reception reuses UDP's host-event push model. **`data` is base64-encoded raw bytes** (`btoa` on send, `atob` on onData): TCP is a byte stream, and a single read may split a multi-byte UTF-8 character; a raw string would be replaced with U+FFFD by `json.Marshal` and permanently corrupted, so plugins must accumulate bytes across chunks before decoding. Only private / loopback / link-local addresses are allowed (anti-SSRF); the 8-sockets-per-plugin quota is counted independently from UDP, and a plugin with active TCP connections is not idle-evicted. Typical use: controlling a local MPD (idle event push on port 6600).
+
 **Return value structure:**
 
 ```javascript
@@ -1546,6 +1548,39 @@ async function useTranslation(text) {
     return text; // fallback
 }
 ```
+
+---
+
+## 13. Host Implementation Constraints (maintainers)
+
+These constraints target maintainers changing the host's `internal/jsplugin`; plugin authors do not need them.
+
+### New permission sync checklist
+
+A new permission constant must be added in three places, or plugins cannot use it at all:
+
+1. `AllPermissions` in the host's `internal/jsplugin/permissions.go`
+2. `VALID_PERMISSIONS` in `plugins/toolchain/packages/plugin-builder/src/manifest.ts` — **this one hard-fails at build time** (`unknown permission: xxx`), so missing it means the plugin cannot even produce an artifact
+3. `AVAILABLE_PERMISSIONS` in `plugins/toolchain/packages/create-songloft-plugin/src/index.ts` (the scaffold's checklist)
+
+`ValidatePermissions` deliberately **only warns on unknown permissions rather than rejecting**: it sits on the mandatory install/update path, and rejecting would make a plugin declaring a new permission uninstallable on older hosts. `minHostVersion` is purely informational and never enforced; still wait for host adoption before shipping a plugin that needs the new permission.
+
+### Runtime projection of `net:insecure-tls`
+
+The `jsruntime` layer has no concept of permissions, and `fetch` itself does not require `net`. After creating an environment, `service.go` calls `jsManager.SetAllowInsecureTLS(envID, ...)` to project the permission into `JSEnv.allowInsecureTLS` (default false) — that flag is its only runtime-layer manifestation.
+
+- `CheckPermission` **does no colon-prefix matching, so `net` does not cover `net:insecure-tls`**; otherwise every existing plugin that already declares `net` would silently gain verification-skipping on upgrade
+- Use a dedicated `insecureTransport`; do **not** reuse `sharedTransport` and mutate `TLSClientConfig` per request, which would poison connection reuse for every plugin
+- Child environments (created via `songloft.jsenv`) must inherit the parent plugin's policy
+- When the header is present without the permission, emit `slog.Warn` rather than dropping it silently
+
+### The background pump must stay event-driven
+
+Async chains detached from `ExecuteJS` (background loops started in `onInit`, work deferred with `setTimeout(fn, 0)`) advance only through `JSService.runTimerProcessor`: it wakes immediately on `asyncSignal` and sleeps until `GetNextTimerDeadline`, with 500ms only as a fallback. Restoring a fixed ticker makes every await continuation wait up to half a tick, silently costing seconds on chains with a dozen hops. `executeInEnv` must call `signalAsync` on return, or timers registered during that call stay invisible to an already-sleeping pump goroutine. When investigating plugin latency, align host-side `doHTTPRequest` timestamps with JS-side observations: a difference that lands on a fixed grid is the pump period.
+
+### Public asset versioning
+
+`jsplugin-assets/*` uses `Cache-Control: immutable` long caching, so injected URLs must carry a content hash (`?v=<hash>`). New public assets must be registered in `assetVersions` in `internal/jsplugin/routes.go`; otherwise no later change will ever reach existing users. See [Frontend Gotchas · cache layer](frontend_gotchas.md).
 
 ---
 

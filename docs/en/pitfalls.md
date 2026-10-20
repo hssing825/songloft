@@ -507,3 +507,17 @@ otherwise a sentinel error lets the handler degrade losslessly to serving the wh
 - **Use** `fileutil.MoveFile(src, dst)` (`internal/fileutil/file_move.go`) instead of bare cross-device `os.Rename`: it tries rename first and falls back to copy + remove on EXDEV; Windows also recognizes `ERROR_NOT_SAME_DEVICE`.
 - `pkg/tag`'s atomic write is unaffected: it uses `os.CreateTemp(dir, ...)` to create the temp file in the **same directory** as the source file, so the rename is always same-device
 - New download/cache logic that needs to "write a temp file first, then move it to the target location" **must** use `fileutil.MoveFile` and **must not** use a bare `os.Rename`
+
+<a id="config-endpoints"></a>
+
+## The three configuration endpoint styles (2026-06 decision)
+
+The project has three kinds of configuration endpoints. **User-visible feature toggles always go through business endpoints**; the generic KV store is only an admin entry point:
+
+- **`/api/v1/settings/<kebab-case-name>` — default home for standalone config** (e.g. `hls-proxy`, `music-path`, `http-proxy`, `library-browse`, `proxy-private-allowlist`). Data is **strongly typed JSON** (e.g. `{enabled: bool}` or an aggregate object), not `{value: string}`. Defaults live in the handler (GET returns the business default when missing; PUT writes directly, so the frontend need not POST-create first). Side effects run inside PUT (e.g. a `music_path` PUT asynchronously rebuilds the Scanner). The handler also holds `*services.ConfigService`. Naming pattern: `Is<Name>Enabled/Set<Name>Enabled` business methods + `Get<Name>Setting/Update<Name>Setting` HTTP handlers.
+- **`/api/v1/<module>/config` — in-module config**: config strongly coupled to the module's action endpoints stays under the module prefix instead of moving to `/settings/`. Existing example: `/cache-manage/config` (shares `CacheService` with `stats/clean`). Decision rule: standalone or cross-module → `/settings/<name>`; strongly in-module → `/<module>/config` or `/<module>/<sub-name>`.
+- **`/api/v1/configs/{key}` — generic KV (admin editor only)**: only for generic config editors such as `config_manager.dart`. New business features **must not call it directly**: the generic PUT returns 404 when the key does not exist and has no strong typing, side effects, or defaults. After a business wrapper exists, the generic endpoint may still modify the same key, but the side effect must also be hooked into `configHandler.SetOnConfigChanged` (see `musicPathChanged` in `routers.go`).
+
+Client conventions: `SettingsApi` (`clients/player/lib/features/settings/data/settings_api.dart`) wraps all `/settings/*` calls and business-feature Providers always go through it; `ConfigApi` is only used by `config_manager.dart` and admin UIs such as "list all configs".
+
+History: this convention was introduced in 2026-06 — `hls_proxy_enabled` was not preloaded, so PUT `/configs/{key}` returned 404, revealing three coexisting styles (`/configs`, `/settings/*`, `/cache-manage/config`). Business endpoints were chosen as the single source for user-visible entry points, with the generic KV degraded to an admin back door.

@@ -482,6 +482,8 @@ final borderRadius =
 - **Browse Card FAB**: `Material(shape: CircleBorder())` floating circular button with elevation, shown on grid card hover for quick play
 - **"Play All" FilledButton**: `FilledButton.icon` pill-shaped button with text label, used in playlist/category page headers
 
+<a id="deployment-modes"></a>
+
 ## Deployment Modes
 
 ### Embedded Mode
@@ -522,8 +524,12 @@ flutter build windows --dart-define=HAS_BACKEND=true  # Windows
 - **Mobile**: the Go backend is compiled via gomobile into `.aar` (Android) / `.xcframework` (iOS); Flutter calls `Start/Stop/IsRunning/GetPort` through `MethodChannel('com.songloft/backend')`
 - **Desktop**: the Go backend is compiled into a `songloft-server` executable; Flutter runs it as a subprocess at startup and parses the listening port from stdout
 - **Web**: Bundle mode is not supported
-- Local mode startup flow: request storage permission → start the embedded backend at `127.0.0.1:<port>` → poll the health check → auto login with `admin/admin`
+- Local mode startup flow: request storage permission → start the embedded backend at `127.0.0.1:<port>` → poll the health check (up to 10 × 300ms) → auto login with `admin/admin`
 - `BackendLifecycle` (WidgetsBindingObserver) listens to the app lifecycle and automatically restarts the backend when the app resumes to the foreground
+- **Android paths**: in Bundle mode the CWD is `/`, so directories such as covers must resolve relative to `DBPath`, not the CWD
+- **Native bridging**: Android calls the gomobile-generated classes by reflection via `Class.forName("mobile.Mobile")`; when the `.aar` is not bundled, `isAvailable()` returns false (graceful degradation). iOS uses Swift to call Objective-C functions such as `MobileStart`
+- **Desktop subprocess**: `DesktopBackendService` looks for `songloft-server` in the same directory as the Flutter executable (on macOS, `Contents/Resources/`) and parses the actual listening port from stdout
+- **CI artifacts**: all start with `songloft-bundled-`; Android/Linux/Windows include the architecture, while Apple uses `songloft-bundled-macos.zip` and `songloft-bundled-ios-nosign.ipa`. The 4 parallel jobs (Android/Linux/Apple/Windows) do not block the main release on failure
 
 ## Audio Playback Architecture
 
@@ -535,6 +541,8 @@ SongloftAudioHandler (extends BaseAudioHandler)
 ├── audio_service (system notification bar / lock screen controls)
 └── audio_session (audio focus management)
 ```
+
+<a id="platform-adaptation"></a>
 
 ### Platform Adaptation
 

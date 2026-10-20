@@ -363,6 +363,8 @@ function onDeinit() {
 
 需要监听 SSDP 多播时，可使用 `songloft.net.udpBind({address: "0.0.0.0:1900", reuseAddress: true})` 后调用 `udpJoinMulticast(socketId, "239.255.255.250")`。`reuseAddress` 默认关闭，只设置 `SO_REUSEADDR`；同端口其他 socket 也须允许复用，否则仍会失败。旧宿主会忽略该选项。声明 `net` 权限，停用时关闭 socket；活跃 UDP socket 会阻止插件被空闲驱逐。
 
+出站 TCP 连接使用 `songloft.net.tcpConnect(host, port, options?)`，返回带 `send()/onData()/onClose()/close()` 的 socket 句柄，同样需要 `net` 权限。数据接收复用 UDP 的 host event 推送模型；**`data` 是 base64 编码的原始字节**（send 侧 `btoa`、onData 侧 `atob`）：TCP 是字节流，一次读取可能截断在多字节 UTF-8 字符中间，raw string 会被 `json.Marshal` 替换为 U+FFFD 而永久损坏，插件需跨 chunk 累积字节后再解码。仅允许连接私有 / 回环 / 链路本地地址（防 SSRF）；与 UDP 各自独立计每插件 8 个 socket 配额，有活跃 TCP 连接的插件不会被空闲驱逐。典型用途：控制本机 MPD（6600 端口 idle 事件推送）。
+
 **返回值结构：**
 
 ```javascript
@@ -1544,6 +1546,39 @@ async function useTranslation(text) {
     return text; // fallback
 }
 ```
+
+---
+
+## 13. 宿主实现约束（维护者）
+
+以下约束面向修改宿主 `internal/jsplugin` 的维护者，插件作者无需了解。
+
+### 新增权限的同步清单
+
+新增权限常量必须同步三处，否则插件根本无法使用：
+
+1. 宿主 `internal/jsplugin/permissions.go` 的 `AllPermissions`
+2. `plugins/toolchain/packages/plugin-builder/src/manifest.ts` 的 `VALID_PERMISSIONS`——它在 build 时硬失败（`unknown permission: xxx`），漏了这处插件连产物都出不来
+3. `plugins/toolchain/packages/create-songloft-plugin/src/index.ts` 的 `AVAILABLE_PERMISSIONS`（脚手架勾选列表）
+
+`ValidatePermissions` 对未知权限**只 warn 不拒绝**：它挂在安装/更新的必经路径上，拒绝会让声明新权限的插件在旧宿主上直接装不上。`minHostVersion` 是纯信息字段，宿主从不强制；新权限仍需等宿主版本铺开后再发插件。
+
+### `net:insecure-tls` 的运行时投影
+
+`jsruntime` 层没有权限概念，`fetch` 本身也不需要 `net`。该权限由 `service.go` 在建环境后调用 `jsManager.SetAllowInsecureTLS(envID, ...)` 投影成 `JSEnv.allowInsecureTLS`（默认 false），是权限在运行时层的唯一体现。
+
+- `CheckPermission` **没有冒号前缀匹配，`net` 不覆盖 `net:insecure-tls`**：否则所有已声明 `net` 的存量插件升级后会静默获得跳过校验的能力
+- 使用独立的 `insecureTransport`，不能复用 `sharedTransport` 后改单次请求的 `TLSClientConfig`，否则会污染所有插件的连接复用
+- 子环境（`songloft.jsenv` 创建的）必须继承父插件策略
+- 无权限却带该头时打 `slog.Warn`，不要静默丢弃
+
+### 后台 pump 必须事件驱动
+
+脱离 `ExecuteJS` 的异步链（`onInit` 起的后台循环、`setTimeout(fn, 0)` 甩到后台的任务）全靠 `JSService.runTimerProcessor` 推进：由 `asyncSignal` 即时唤醒、按 `GetNextTimerDeadline` 休眠，500ms 只是兜底。改回固定 ticker 会让每个 await 续作多等半拍，十几跳的链路平白累积数秒。`executeInEnv` 返回时必须 `signalAsync` 一次，否则本次调用新注册的定时器对正在休眠的 pump 协程不可见。排查插件延迟时先对齐宿主侧 `doHTTPRequest` 时间戳与 JS 侧观测时刻，差值落在固定网格上就是 pump 周期。
+
+### 公共资源版本化
+
+`jsplugin-assets/*` 使用 `Cache-Control: immutable` 长缓存，注入 URL 必须带内容哈希（`?v=<hash>`）；新增公共资源必须登记进 `internal/jsplugin/routes.go` 的 `assetVersions`，否则任何后续修改对老用户都不可达。详见[前端踩坑 · 缓存层](frontend_gotchas.md)。
 
 ---
 

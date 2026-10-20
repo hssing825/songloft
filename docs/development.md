@@ -2,6 +2,14 @@
 
 本站使用 VitePress 自定义主题。页面内容来源分为手工文档、落地页结构化数据和构建时同步 / 生成的页面。修改前先确认来源，并同步中英文。
 
+## 修改前判断
+
+1. 首页 / 落地页 → 改 `.vitepress/data/*.ts`
+2. `quick-start` / `changelog` → 改根 `README` / `CHANGELOG`
+3. 子模块同步页 → 改子模块源仓库，再回主仓库 bump 指针
+4. `repowiki` → 直接改入库的 Markdown
+5. 其余手工页 → 改对应中英文文件
+
 ## 本地预览与构建
 
 ```bash
@@ -34,7 +42,7 @@ npm run docs:preview
 
 `repowiki` 是入库且手工维护的 Markdown，仓内没有重新生成它的脚本。代码变更后直接更新相关页面；不要把它与忽略的 Swagger API 页面混为一类。
 
-子模块文档应改源仓库，再更新主仓库指针。未 checkout 子模块时同步脚本仅警告，相关页面可能缺失；CI 的子模块初始化清单见 `.github/workflows/static.yml`。
+子模块文档应改源仓库，再更新主仓库指针。`sync-docs.mjs` 的 `to:` 目标路径与源路径**刻意解耦**（如 `integrations/home-assistant/README.md` → `docs/addon/index.md`），因为 `/addon/` 等对外 URL 已进 sitemap，不能跟随源仓库改名。未 checkout 子模块时同步脚本仅警告，相关页面会**静默消失**；CI 的子模块初始化清单见 `.github/workflows/static.yml`，必须包含这些子模块。
 
 ## 同步与生成脚本
 

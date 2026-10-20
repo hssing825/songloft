@@ -115,6 +115,13 @@ func (r *SongRepository) ListRecent(ctx context.Context, limit int) ([]*models.S
 }
 ```
 
+<a id="sqlc-common-errors"></a>
+
+## Common sqlc Errors
+
+- **Never write CJK comments after `-- name:`**: sqlc embeds query comments into generated code as doc comments **byte-wise**; multi-byte characters get truncated into invalid UTF-8 and `make sqlc` fails outright (`error generating code: illegal UTF-8 encoding`). Put such comments on the Go repository method instead
+- **Qualify outer columns in self-referencing subqueries**: in `DELETE FROM t WHERE col = ? AND id NOT IN (SELECT x.id FROM t x ...)`, a bare outer `col` is rejected by sqlc as `column reference is ambiguous`; write `t.col`
+
 ## Dynamic SQL (variable-length WHERE / SET / pagination)
 
 **Do not** stuff these into `queries/*.sql` — sqlc can't handle variable-length. Use squirrel directly in `*_repository.go`:

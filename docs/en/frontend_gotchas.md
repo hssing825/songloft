@@ -2,7 +2,7 @@
 
 This document captures pitfalls in the Flutter client (`songloft-player`) that have been **diagnosed and fixed, but whose root causes are broadly applicable** — mostly in Flutter Web (CanvasKit) rendering, platform views (plugin iframes), and the audio backend. These burned through many rounds of investigation; archiving them here prevents repeating that.
 
-> Backend/business-side pitfalls are in the repo-root `AGENTS.md` under "Business gotchas summary" and "Platform adaptation gotchas".
+> Backend/business-side pitfalls are in [Business Constraints and Pitfalls](pitfalls.md); see the repository-root `AGENTS.en.md` for entry-point routing.
 
 ---
 
@@ -132,6 +132,20 @@ Android Chrome shows a black screen after returning from background.
 - **Pitfall**: a paginated list (playlist >100 songs, category pages, etc.) calling `playPlaylist(songs, startIndex)` directly, where `songs` is only the currently-loaded page → the play queue is truncated to the loaded count (e.g. max 100) and only loops within it.
 - **Fix**: use `PlayerNotifier.playPlaylistFromLoaded` — play immediately with the loaded page + startIndex, and when `total > loaded count` backfill in the background with the same sort/order/keyword (reusing `_loadRemainingSongsById`).
 - **Any new "tap single song in a paginated list" page** must include the backfill logic; category/facet filter pages must keep the field→getSongs parameter mapping consistent (`categorySongsFilter`).
+
+---
+
+<a id="drive-flutter-web"></a>
+
+## 7. Driving Flutter Web (headless verification)
+
+The complete Docker headless Chrome workflow is in [AI Development · Frontend UI Verification](ai-development.md#frontend-ui-verification). When driving Flutter Web:
+
+- **Flutter Web renders to a canvas, so the DOM has no buttons.** Interactive elements are exposed only as `<flt-semantics>` accessibility nodes: read `getBoundingClientRect()`, then `page.mouse.click(x, y)` on the center. If `<flt-semantics-placeholder>` appears on first paint, click it first
+- **Semantics labels get merged**: a whole screen often collapses into one long aria-label node, and a button's text is not necessarily its own node. When you can't find it, screenshot first and click by coordinates instead of fighting label matching
+- **Text fields**: `<input aria-label="Username">` is real DOM, but clicking by coordinates plus `keyboard.type` is more reliable; leave ~800ms between the click and the typing so Flutter establishes focus, or the input is dropped
+- **Verifying both languages**: override `navigator.language`/`languages` to `zh-CN` via `evaluateOnNewDocument`; Flutter l10n follows
+- **Deep links**: `page.goto('/settings/category/2')` is a full reload and can produce a bogus "Failed to load" mid-boot. Navigate by clicking inside the app instead of using goto for nested routes
 
 ---
 

@@ -115,6 +115,13 @@ func (r *SongRepository) ListRecent(ctx context.Context, limit int) ([]*models.S
 }
 ```
 
+<a id="sqlc-common-errors"></a>
+
+## 常见错误（sqlc）
+
+- **`-- name:` 之后不要写中文注释**：sqlc 会把 query 注释当 doc comment 按**字节**嵌进生成代码，中文被截断成非法 UTF-8，`make sqlc` 直接失败（`error generating code: illegal UTF-8 encoding`）。注释写在 Go 仓储方法上
+- **同表自引用子查询要给外层列限定表名**：`DELETE FROM t WHERE col = ? AND id NOT IN (SELECT x.id FROM t x ...)` 里外层裸 `col` 会被 sqlc 判为 `column reference is ambiguous`，写成 `t.col` 才过
+
 ## 动态 SQL(变长 WHERE / SET / 分页)
 
 **不要**塞进 `queries/*.sql` —— sqlc 处理不了变长。直接在 `*_repository.go` 用 squirrel:

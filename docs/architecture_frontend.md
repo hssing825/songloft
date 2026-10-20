@@ -482,6 +482,8 @@ final borderRadius =
 - **Browse Card FAB**：`Material(shape: CircleBorder())` 悬浮圆形按钮，带 elevation，用于网格卡片悬停时的快速播放
 - **"全部播放" FilledButton**：`FilledButton.icon` 药丸形按钮，含文字标签，用于歌单/分类页头部
 
+<a id="deployment-modes"></a>
+
 ## 部署模式
 
 ### 嵌入模式（Embedded）
@@ -522,8 +524,12 @@ flutter build windows --dart-define=HAS_BACKEND=true  # Windows
 - **移动端**：Go 后端通过 gomobile 编译为 `.aar`（Android）/ `.xcframework`（iOS），Flutter 通过 `MethodChannel('com.songloft/backend')` 调用 `Start/Stop/IsRunning/GetPort`
 - **桌面端**：Go 后端编译为 `songloft-server` 可执行文件，Flutter 启动时作为子进程运行，通过 stdout 解析监听端口
 - **Web**：不支持 Bundle 模式
-- 本地模式启动流程：申请存储权限 → 启动嵌入后端 `127.0.0.1:<port>` → 健康检查轮询 → 自动 `admin/admin` 登录
+- 本地模式启动流程：申请存储权限 → 启动嵌入后端 `127.0.0.1:<port>` → 健康检查轮询（最多 10 次 × 300ms）→ 自动 `admin/admin` 登录
 - `BackendLifecycle`（WidgetsBindingObserver）监听 App 生命周期，前台恢复时自动重启后端
+- **Android 路径**：Bundle 模式 CWD 是 `/`，covers 等目录必须相对 `DBPath` 解析，不能按 CWD 解析
+- **原生桥接**：Android 用 `Class.forName("mobile.Mobile")` 反射调用 gomobile 生成类，未打包 `.aar` 时 `isAvailable()` 返回 false（优雅降级）；iOS 用 Swift 调用 `MobileStart` 等 Objective-C 函数
+- **桌面子进程**：`DesktopBackendService` 在 Flutter 可执行文件同目录查找 `songloft-server`（macOS 为 `Contents/Resources/`），并从 stdout 解析实际监听端口
+- **CI 产物**：统一以 `songloft-bundled-` 开头；Android/Linux/Windows 带架构，Apple 为 `songloft-bundled-macos.zip`、`songloft-bundled-ios-nosign.ipa`。4 个并行 Job（Android/Linux/Apple/Windows）失败不阻塞主 Release
 
 ## 音频播放架构
 
@@ -535,6 +541,8 @@ SongloftAudioHandler (extends BaseAudioHandler)
 ├── audio_service (系统通知栏/锁屏控制)
 └── audio_session (音频焦点管理)
 ```
+
+<a id="platform-adaptation"></a>
 
 ### 平台适配
 

@@ -53,6 +53,34 @@ HEAD alone cannot identify uncommitted code. The `commits` mode records HEAD, SH
 
 After pushing, follow required CI for **the same SHA**; cancelled/skipped checks are not passes. Before tagging formal releases, confirm required checks for the target code; validate version edits too. The parent `release.yml` Quality job runs Go formatting, vet, tests, and script tests before builds/publication. Backend `dev,lite` checks do not replace full embedded builds, client/plugin regressions, or devices. Existing formal-release platform requirements apply.
 
+<a id="frontend-ui-verification"></a>
+
+## Frontend UI Verification (Dockerized Headless Browser)
+
+When you need to actually exercise a change in the UI (not just run unit tests), use headless Chrome inside Docker. On this repo's dev machine the host's `google-chrome --headless` core dumps and never binds its CDP port, so don't waste time on it.
+
+```bash
+# 1. Build the frontend in embedded mode so the Go backend serves it same-origin
+#    (skips the standalone API-address configuration step)
+make build-frontend-web-embedded
+go build -tags dev -o /tmp/songloft-full .
+/tmp/songloft-full -port 58191 -db <tmpdir>/test.db -music <musicdir>
+
+# 2. Start the browser container. --network host is what lets the containerized
+#    Chrome reach the host's 127.0.0.1:58191
+docker run -d --name uichrome --network host browserless/chrome:latest
+
+# 3. Drive it through the /function endpoint (Content-Type must be application/javascript)
+curl -s -X POST http://127.0.0.1:3000/function \
+  -H 'Content-Type: application/javascript' --data-binary @script.js
+```
+
+Scripts look like `module.exports = async ({ page }) => { ...; return { data: {...}, type: 'application/json' } }`. Take screenshots with `page.screenshot({ encoding: 'base64' })`, return them inside `data`, and base64-decode them into PNGs locally.
+
+Default Lynx Web controls live under `document.getElementById('app').shadowRoot`; inputs have another shadow root. Navigate through the UI with real clicks and anchor assertions on media time or backend-observable state. For Flutter Web semantics clicking, merged labels, and deep-link pitfalls, see [Frontend Gotchas · Driving Flutter Web](frontend_gotchas.md#drive-flutter-web).
+
+A screenshot only proves "it rendered correctly". Whether the interaction actually took effect needs separate evidence — e.g. after flipping a toggle, `curl` the matching `/settings/<name>` endpoint and check the value changed; after clicking "Stop computing", use `pgrep -x ffmpeg` to confirm the child processes hit zero. **Do not count processes with `ps -ef | grep <keyword> | wc -l`**: the current shell's own command line contains that keyword, so you consistently over-count by 1–2. Use `pgrep -x <executable>`.
+
 ## Unresolved Issue Triage
 
 Run from the parent (Node.js 22+, Git; network mode needs authenticated `gh`; replace example filenames with unique identifiers):

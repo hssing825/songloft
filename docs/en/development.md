@@ -2,6 +2,14 @@
 
 The site uses a custom VitePress theme. Content comes from maintained Markdown, structured landing-page data, and pages synced / generated during builds. Check the source before editing and synchronize Chinese and English.
 
+## Before Editing
+
+1. Home / landing page → edit `.vitepress/data/*.ts`
+2. `quick-start` / `changelog` → edit the root `README` / `CHANGELOG`
+3. Submodule-synced pages → edit the submodule source repo, then bump the pointer in the parent
+4. `repowiki` → edit the tracked Markdown directly
+5. Other maintained pages → edit the corresponding Chinese and English files
+
 ## Local preview and builds
 
 ```bash
@@ -34,7 +42,7 @@ Landing `index.md` only mounts `<Landing />`. Installation options live in `down
 
 `repowiki` is tracked, maintained Markdown with no regeneration script in this repository. Edit relevant pages when code changes; it differs from the ignored Swagger API pages.
 
-Edit submodule documentation in its source repository, then update the parent pointer. The sync script only warns when a submodule is absent, so pages may disappear; see the initialization list in `.github/workflows/static.yml`.
+Edit submodule documentation in its source repository, then update the parent pointer. The `to:` target paths in `sync-docs.mjs` are **deliberately decoupled** from source paths (e.g. `integrations/home-assistant/README.md` → `docs/addon/index.md`), because public URLs such as `/addon/` are already in the sitemap and must not follow source-repo renames. The sync script only warns when a submodule is absent, so pages **silently disappear**; the initialization list in `.github/workflows/static.yml` must include them.
 
 ## Sync and generation scripts
 

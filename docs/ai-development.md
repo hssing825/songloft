@@ -53,6 +53,32 @@ HEAD 不能单独标识未提交代码。`commits` 模式记录 HEAD、tracked d
 
 推送后追踪**同一 SHA** 的必要 CI，取消/跳过不算通过。正式版打 tag 前确认目标代码的必要检查完成，版本更新本身也需验证。主仓库 `release.yml` 的 Quality 作业在构建与发布前运行 Go 格式、vet、测试和脚本测试；`dev,lite` 后端检查不替代完整嵌入构建、客户端/插件回归与设备验收。正式版继续遵守现有平台构建要求。
 
+<a id="frontend-ui-verification"></a>
+
+## 前端 UI 验证（Docker 无头浏览器）
+
+需要真的在界面上跑一遍（而不只是跑单元测试）时，用 Docker 里的无头 Chrome。开发机上宿主的 `google-chrome --headless` 会 core dump、CDP 端口也起不来，不要在那上面浪费时间。
+
+```bash
+# 1. 前端编成嵌入模式，由 Go 后端同源提供（省掉 standalone 的 API 地址配置）
+make build-frontend-web-embedded
+go build -tags dev -o /tmp/songloft-full .
+/tmp/songloft-full -port 58191 -db <tmpdir>/test.db -music <musicdir>
+
+# 2. 起浏览器容器。--network host 才能让容器里的 Chrome 访问宿主 127.0.0.1:58191
+docker run -d --name uichrome --network host browserless/chrome:latest
+
+# 3. 用 /function 端点跑 puppeteer 脚本（Content-Type 必须是 application/javascript）
+curl -s -X POST http://127.0.0.1:3000/function \
+  -H 'Content-Type: application/javascript' --data-binary @script.js
+```
+
+脚本形如 `module.exports = async ({ page }) => { ...; return { data: {...}, type: 'application/json' } }`；截图用 `page.screenshot({ encoding: 'base64' })` 塞进 `data` 带回，再本地 base64 解码为 PNG。
+
+默认 Lynx Web 控件位于 `document.getElementById('app').shadowRoot`，输入框还有内部 shadow root。通过界面导航并使用真实点击；断言落在媒体时间或后端可观测状态上。Flutter Web 的语义节点点击、label 合并、深链等坑见[前端踩坑 · 驱动 Flutter Web](frontend_gotchas.md#drive-flutter-web)。
+
+截图只能证明「渲染对了」；交互是否生效必须另找证据，例如点完开关 `curl` 对应 `/settings/<name>` 看值是否变化，点完「停止计算」用 `pgrep -x ffmpeg` 确认子进程归零。**数进程别用 `ps -ef | grep <关键字> | wc -l`**：当前 shell 的命令行本身含关键字，会稳定多算 1~2 个；用 `pgrep -x <可执行名>`。
+
 ## 排查未解决 Issue
 
 在父仓库运行（Node.js 22+、Git，网络模式需已登录的 `gh`；把示例文件名换成唯一标识）：

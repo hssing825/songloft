@@ -137,6 +137,8 @@ songloft/
 └── docs/                       # 项目文档
 ```
 
+<a id="build-system"></a>
+
 ## 构建系统
 
 ### 构建标签
@@ -150,6 +152,14 @@ songloft/
 | `make build-go-mobile-ios` | `-tags lite` | Go 后端编译为 iOS .xcframework（gomobile bind） |
 | `make build-go-desktop-{linux,windows,macos}` | `-tags lite` | Go 后端编译为桌面可执行文件（Bundle 用） |
 
+### 构建参数与嵌入
+
+- `VERSION` 与 `BUILD_TYPE` 正交：`VERSION=dev` 自动启用 `-tags dev`（含 Swagger + pprof），正式版为 `X.Y.Z`；`BUILD_TYPE=lite` 不嵌入前端，留空即完整版。**禁止** `BUILD_TYPE=dev` 之类的混合值
+- 前端嵌入路径固定为 `clients/player-build/web-embedded`（**不是** `clients/player/build/web-embedded`）
+- SPA 回退只对不存在且末段不含 `.` 的路径返回 `index.html`；缺失静态资源必须返回 404，不能返回 HTML 冒充 JS/JSON
+- 子路径部署：启动时传 `-base-path /xxx` 或 `BASE_PATH=/xxx`；入口用 `http.StripPrefix` 剥离前缀，`embed.go` 运行时把 `<base href="/">` 替换为 `<base href="/xxx/">`；Lynx 宿主页通过 `webBaseUrl` 注入部署目录，供 API、Worker 和静态资源使用
+- 完整版用 Node.js 22 + pnpm 11.15.1 构建 Lynx Web，显式应用引擎补丁并预压缩；`embedded-build.json` 分别记录客户端与服务器身份
+
 ### 前端构建
 
 ```bash
@@ -157,6 +167,27 @@ make build-frontend-web-embedded   # 嵌入模式（隐藏 API 地址 UI）
 make build-frontend-web            # 独立部署版
 make build-frontend-all            # 当前系统支持的所有平台
 ```
+
+<a id="docker-entrypoint"></a>
+
+## Docker 入口与热替换
+
+镜像内底包为 `/app/songloft`，持久化 data 卷运行 `/app/data/songloft`。容器启动时由 `scripts/docker-entrypoint.sh` 决定是否用底包覆盖 data：
+
+**核心原则：底包代表用户意图；dev/release 通道或 full/lite 变体不一致时用底包覆盖。只有「同通道 + 同 BUILD_TYPE」才比较新旧：dev 按 Build Time，release 按版本号。**
+
+前置分支：目标文件不存在时直接初始化；底包通道未知保留目标，目标通道未知用已识别底包替换；同为 stable 但任一版本未通过 `is_semver`（如自定义 tag）时按底包覆盖。
+
+| 场景 | 行为 | 原因 |
+|------|------|------|
+| dev ↔ release 通道不同 | 替换 | 用户换了镜像通道 |
+| BUILD_TYPE 不同（full↔lite） | 替换 | 用户换了镜像变体 |
+| 同为 dev + 同类型 + 底包 Build Time > data Build Time | 替换 | dev 滚动构建按构建时间选最新 |
+| 同为 dev + 同类型 + data Build Time >= 底包 Build Time | 不替换 | data 可能通过 API 在线升级过 |
+| 同为 release + 同类型 + 底包版本 > data 版本 | 替换 | 正式版升级 |
+| 同为 release + 同类型 + data 版本 >= 底包 | 不替换 | data 可能通过 API 在线升级过 |
+
+非 root 运行（`PUID`/`PGID`）、`/app/data` 与 `/app/music` 的 chown 策略以及 `FIX_MUSIC_PERMISSIONS` 见[快速开始](quick-start.md)的 Docker 章节。默认不设置即保持 root 运行，与旧版本行为一致。
 
 ## 技术亮点
 

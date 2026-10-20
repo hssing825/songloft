@@ -410,3 +410,17 @@ handler 无损降级为从头 `ServeFile`）。
 - **统一使用** `fileutil.MoveFile(src, dst)`（`internal/fileutil/file_move.go`）替代跨设备的裸 `os.Rename`：先尝试 rename，EXDEV 时自动回退 copy + remove；Windows 还识别 `ERROR_NOT_SAME_DEVICE`。
 - `pkg/tag` 的原子写不受影响：它用 `os.CreateTemp(dir, ...)` 在源文件**同目录**创建临时文件，rename 一定同设备
 - 新增下载/缓存逻辑如果需要"先写临时文件再挪到目标位置"，**必须**用 `fileutil.MoveFile`，**不要**裸 `os.Rename`
+
+<a id="config-endpoints"></a>
+
+## 配置接口的三种风格（2026-06 决策）
+
+项目里同时存在三类配置接口。**用户可见的功能开关一律走业务端点**，通用 KV 只作 admin 入口：
+
+- **`/api/v1/settings/<kebab-case-name>` — 孤立配置的默认入口**（如 `hls-proxy`、`music-path`、`http-proxy`、`library-browse`、`proxy-private-allowlist`）。数据是**强类型 JSON**（如 `{enabled: bool}` 或聚合对象），不是 `{value: string}`；默认值由 handler 承担（缺失时 GET 返回业务默认，PUT 直接写入，前端无需先 POST 创建）；副作用在 PUT 内直接触发（如 `music_path` PUT 后异步重建 Scanner）；handler 同时持有 `*services.ConfigService`。命名套路：`Is<Name>Enabled/Set<Name>Enabled` 业务方法 + `Get<Name>Setting/Update<Name>Setting` HTTP handler。
+- **`/api/v1/<module>/config` — 模块内配置**：与该模块动作端点强相关的配置保留在模块前缀下，不拆到 `/settings/`。已有 `/cache-manage/config`（与 `stats/clean` 共用 `CacheService`）。判定：孤立或跨模块共享 → `/settings/<name>`；模块内强相关 → `/<module>/config` 或 `/<module>/<sub-name>`。
+- **`/api/v1/configs/{key}` — 通用 KV（仅 admin 编辑器）**：仅供 `config_manager.dart` 这类通用配置编辑器调试。新业务功能**不要直调**：通用 PUT 在 key 不存在时返回 404，且没有强类型、副作用和默认值。业务化封装后通用接口仍可改同一 key，但副作用必须同时挂在 `configHandler.SetOnConfigChanged` 回调（参考 `routers.go` 的 `musicPathChanged`）。
+
+客户端约定：`SettingsApi`（`clients/player/lib/features/settings/data/settings_api.dart`）封装所有 `/settings/*` 调用，业务 Provider 一律走它；`ConfigApi` 只在 `config_manager.dart` 和「列出所有配置」这类 admin UI 中使用。
+
+历史背景：该规范在 2026-06 引入——`hls_proxy_enabled` 默认未预置导致 PUT `/configs/{key}` 返回 404，暴露出 `/configs`、`/settings/*`、`/cache-manage/config` 三种风格并存。最终确定业务端点是用户可见入口的唯一来源，通用 KV 退化为 admin 后门。

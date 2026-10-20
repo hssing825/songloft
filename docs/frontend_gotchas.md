@@ -2,7 +2,7 @@
 
 本文沉淀 Flutter 客户端（`songloft-player`）里**已定位并修复、但根因具有普适性**的坑，主要集中在 Flutter Web（CanvasKit）渲染、平台视图（插件 iframe）、音频后端。这些坑反复消耗过大量排查回合，归档在此避免重蹈。
 
-> 后端/业务侧踩坑见项目根 `AGENTS.md` 的「业务踩坑总结」与「平台适配踩坑」章节。
+> 后端/业务侧踩坑见[业务约束与踩坑](pitfalls.md)；入口导航见项目根 `AGENTS.md`。
 
 ---
 
@@ -132,6 +132,20 @@ Android Chrome 切后台回来黑屏。
 - **坑**：分页列表（歌单 >100 首、分类页等）直接 `playPlaylist(songs, startIndex)`，`songs` 只是当前已加载页 → 播放队列被截断到已加载数（如最长 100），只在其中循环。
 - **修复**：用 `PlayerNotifier.playPlaylistFromLoaded`——以已加载分页 + startIndex 立即播放，`total > 已加载数` 时按相同 sort/order/keyword 后台补齐（复用 `_loadRemainingSongsById`）。
 - **新增任何「分页列表点单曲」页面**务必带补齐逻辑；分类/facet 过滤页要保证 field→getSongs 参数映射一致（`categorySongsFilter`）。
+
+---
+
+<a id="drive-flutter-web"></a>
+
+## 七、驱动 Flutter Web（无头浏览器验证）
+
+用 Docker 无头 Chrome 做真实 UI 验证的完整流程见 [AI 开发流程 · 前端 UI 验证](ai-development.md#frontend-ui-verification)。驱动 Flutter Web 时注意：
+
+- **Flutter Web 是 canvas 渲染，DOM 里没有按钮**。可交互元素只以 `<flt-semantics>` 无障碍节点暴露：用 `getBoundingClientRect()` 取中心点后 `page.mouse.click(x, y)`；首屏出现 `<flt-semantics-placeholder>` 时先点击它
+- **语义 label 会被合并**：一屏内容常聚合成一个长 aria-label 节点，按钮文字未必是独立节点。找不到时先截图看坐标再点，不要在 label 匹配上死磕
+- **文本框**：`<input aria-label="Username">` 是真实 DOM，但坐标点击 + `keyboard.type` 更稳；点击与输入之间留 ~800ms，等 Flutter 建立焦点，否则输入会丢
+- **验证双语**：用 `evaluateOnNewDocument` 覆写 `navigator.language`/`languages` 为 `zh-CN`，Flutter l10n 会跟着切
+- **深链**：`page.goto('/settings/category/2')` 是整页刷新，会在启动中途产生假的 "Failed to load"；用应用内点击导航，不要用 goto 跳嵌套路由
 
 ---
 

@@ -136,6 +136,8 @@ songloft/
 └── docs/                       # Project documentation
 ```
 
+<a id="build-system"></a>
+
 ## Build System
 
 ### Build Tags
@@ -149,6 +151,14 @@ songloft/
 | `make build-go-mobile-ios` | `-tags lite` | Compiles the Go backend into an iOS .xcframework (gomobile bind) |
 | `make build-go-desktop-{linux,windows,macos}` | `-tags lite` | Compiles the Go backend into a desktop executable (for Bundle mode) |
 
+### Build Parameters and Embedding
+
+- `VERSION` and `BUILD_TYPE` are orthogonal: `VERSION=dev` automatically enables `-tags dev` (Swagger + pprof), while releases use `X.Y.Z`; `BUILD_TYPE=lite` embeds no frontend, and empty means full. **Do not** use mixed values such as `BUILD_TYPE=dev`
+- The frontend embed path is always `clients/player-build/web-embedded` (**not** `clients/player/build/web-embedded`)
+- SPA fallback returns `index.html` only for missing paths whose final segment contains no `.`; missing static assets must return 404, never HTML masquerading as JS/JSON
+- Sub-path deployment: pass `-base-path /xxx` or `BASE_PATH=/xxx` at startup; the entry point strips the prefix with `http.StripPrefix`, `embed.go` replaces `<base href="/">` with `<base href="/xxx/">` at runtime, and the Lynx host injects its deployment directory through `webBaseUrl` for API, Worker, and static URLs
+- Full builds use Node.js 22 + pnpm 11.15.1 for Lynx Web, apply engine patches explicitly, and precompress assets; `embedded-build.json` records client and server identities separately
+
 ### Frontend Build
 
 ```bash
@@ -156,6 +166,27 @@ make build-frontend-web-embedded   # Embedded mode (hides API address UI)
 make build-frontend-web            # Standalone deployment build
 make build-frontend-all            # All platforms supported by the current system
 ```
+
+<a id="docker-entrypoint"></a>
+
+## Docker Entry and Hot Swap
+
+The image contains a base package at `/app/songloft`, while the persistent data volume runs `/app/data/songloft`. On startup, `scripts/docker-entrypoint.sh` decides whether to overwrite data with the base package:
+
+**Core principle: the base package represents the user's intent; when the dev/release channel or the full/lite variant differs, overwrite with the base package. Only compare old vs. new when "same channel + same BUILD_TYPE": dev by Build Time, release by version number.**
+
+Earlier branches: initialize directly when the target file is missing; an unknown base channel preserves the target, while an unknown target channel is replaced by a recognized base; when both are stable but either version fails the `is_semver` check (such as a custom tag), use the base without comparing versions.
+
+| Scenario | Behavior | Reason |
+|------|------|------|
+| dev ↔ release channel differs | Replace | The user switched image channels |
+| BUILD_TYPE differs (full↔lite) | Replace | The user switched image variants |
+| Both dev + same type + base Build Time > data Build Time | Replace | Dev rolling builds pick the newest by build time |
+| Both dev + same type + data Build Time >= base Build Time | Don't replace | Data may have been upgraded online via the API |
+| Both release + same type + base version > data version | Replace | Release upgrade |
+| Both release + same type + data version >= base | Don't replace | Data may have been upgraded online via the API |
+
+See the Docker sections in the [quick start](quick-start.md) for non-root operation (`PUID`/`PGID`), the `/app/data` and `/app/music` chown strategy, and `FIX_MUSIC_PERMISSIONS`. Leaving them unset keeps root operation, identical to prior versions.
 
 ## Technical Highlights
 
