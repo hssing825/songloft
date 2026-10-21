@@ -10,6 +10,14 @@ Evidence-backed lessons for the parent and public host contracts; see the [AI wo
 
 ## Entries
 
+### PLAYLIST-001: Check built-in playlist display preferences separately from hidden-song semantics
+
+- Scope: home favorites cards, client menus and server playlist visibility, songloft-org/songloft#532.
+- Failure evidence: on 2026-10-21, the [initial reply](https://github.com/songloft-org/songloft/issues/532#issuecomment-6308512268) applied an ordinary playlist's hide action to built-in Favorites / Radio favorites. Actual Web screenshots showed only pinning in the Favorites menu; Flutter/Lynx menus and `/playlists/{id}/visibility` explicitly protect built-in playlists. A [correction with screenshots](https://github.com/songloft-org/songloft/issues/532#issuecomment-6309354674) was published.
+- Rule: check object identity guards, the actual menu and backend restrictions before explaining an operation. An ordinary object's call path does not establish availability for built-in objects. Trace consumers of `hidden` when designing home display: song queries exclude songs in hidden playlists by default, so home-card visibility needs a separate preference.
+- Done right: after user approval, both clients gained independent home display switches stored locally per server and account. Identification uses built-in IDs plus `built_in`; membership and labels do not change. Tests, actual browser checks and Not run items are recorded in [Flutter](clients/player/docs/en/issue-532.md) and [Lynx](clients/player-lynx/docs/en/project/issue-532.md), bound to their worktrees without claiming native-device or released-version validation.
+- Seen 1× (2026-10-21). Status: lesson; implementation and validation complete. Commit, CI and version status follow the #532 reply and delivery validation record.
+
 ### JSPLUG-002: SDK methods can exist while the host transport remains unavailable
 
 - Scope: Flutter / Lynx / iframe host bridges in shared `internal/jsplugin/assets/common.js`; no linked Issue, baseline `32ca05ccab18a68133ab1ccb776460610c835726`.

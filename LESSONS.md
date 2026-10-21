@@ -10,6 +10,14 @@
 
 ## 条目
 
+### PLAYLIST-001：内置歌单的展示偏好与隐藏歌曲语义必须分开核对
+
+- 范围：首页收藏展示、客户端菜单及服务端歌单可见性，songloft-org/songloft#532。
+- 失败证据：2026-10-21，[初次回复](https://github.com/songloft-org/songloft/issues/532#issuecomment-6308512268)将普通歌单的隐藏操作套用于内置「收藏／电台收藏」。实际 Web 截图显示内置「收藏」菜单只有置顶；Flutter/Lynx 菜单与后端 `/playlists/{id}/visibility` 均明确限制内置歌单。[更正及截图](https://github.com/songloft-org/songloft/issues/532#issuecomment-6309354674)已发布。
+- 规则：解释操作前核对目标对象的身份条件、实际菜单和后端限制，不能仅从普通对象的调用链推断内置对象可用。设计首页展示时同时追踪 `hidden` 标签的消费者：歌曲列表默认排除隐藏歌单内的歌曲，因此首页卡片显示偏好必须独立保存。
+- Done right：本次经用户确认，在两客户端新增独立、按服务器与账号保存在本机的首页显示开关；按内置 ID 与 `built_in` 识别，不改收藏成员或标签。测试、实际浏览器及未跑项分别记录在 [Flutter](clients/player/docs/cn/issue-532.md) 与 [Lynx](clients/player-lynx/docs/project/issue-532.md)，最终结果绑定各自工作树，不外推为原生设备或已发布版本。
+- Seen 1× (2026-10-21)。状态：经验；实现与验证完成，提交、CI 与版本状态以 #532 后续回复及交付验证记录为准。
+
 ### JSPLUG-002：客户端 SDK 的方法存在不等于宿主传输可用
 
 - 范围：公共资源 `internal/jsplugin/assets/common.js` 的 Flutter / Lynx / iframe 宿主桥；无关联 Issue，基线 `32ca05ccab18a68133ab1ccb776460610c835726`。
