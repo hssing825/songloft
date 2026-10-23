@@ -113,9 +113,11 @@ func (a *App) setupAPIV1Router() {
 		a.db,
 	)
 
+	loginLimiter := app_middleware.NewLoginRateLimiter()
+
 	a.router.Route("/api/v1", func(r chi.Router) {
-		// 认证模块路由
-		r.Post("/auth/login", authHandler.Login)
+		// 认证模块路由：登录接口按源 IP 限流，防爆破（回环豁免，不影响本地自动登录）
+		r.With(loginLimiter.Middleware).Post("/auth/login", authHandler.Login)
 		r.Post("/auth/refresh", authHandler.RefreshToken)
 
 		// 版本信息
