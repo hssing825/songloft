@@ -5,7 +5,9 @@ package mobile
 
 import (
 	"context"
+	"crypto/rand"
 	"embed"
+	"encoding/base64"
 	"fmt"
 	"log/slog"
 	"net"
@@ -13,6 +15,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime/debug"
+	"strings"
 	"sync"
 	"time"
 
@@ -63,7 +66,15 @@ func Start(dataDir, musicDir string, port int) (int, error) {
 		portStr = fmt.Sprintf("%d", port)
 	}
 
-	cfg := config.NewAppConfig(portStr, dbPath, "", "", "")
+	// 移动端监听 0.0.0.0（见下方 DLNA 说明），局域网可达，绝不能用默认 admin/admin：
+	// 同网段任何人都能登入并经 /jsplugins 拿到 QuickJS 代码执行。为每个安装生成一次
+	// 随机密码并落盘复用，客户端从同一 dataDir 读取后登录。
+	adminPassword, err := ensureAdminPassword(dataDir)
+	if err != nil {
+		return -1, fmt.Errorf("准备管理员密码失败: %w", err)
+	}
+
+	cfg := config.NewAppConfig(portStr, dbPath, "admin", adminPassword, "")
 	cfg.MusicDir = musicDir
 
 	var emptyFS embed.FS
@@ -99,6 +110,28 @@ func Start(dataDir, musicDir string, port int) (int, error) {
 	}()
 
 	return actualPort, nil
+}
+
+// ensureAdminPassword 读取 dataDir 下的管理员密码文件，不存在则生成随机密码并以
+// 0600 落盘后复用。客户端从同一 dataDir 读取该文件完成登录。
+func ensureAdminPassword(dataDir string) (string, error) {
+	pwPath := filepath.Join(dataDir, "admin_password")
+	if b, err := os.ReadFile(pwPath); err == nil {
+		if pw := strings.TrimSpace(string(b)); pw != "" {
+			return pw, nil
+		}
+	}
+
+	buf := make([]byte, 18)
+	if _, err := rand.Read(buf); err != nil {
+		return "", err
+	}
+	pw := base64.RawURLEncoding.EncodeToString(buf)
+
+	if err := os.WriteFile(pwPath, []byte(pw), 0600); err != nil {
+		return "", err
+	}
+	return pw, nil
 }
 
 // Stop 优雅停止后端

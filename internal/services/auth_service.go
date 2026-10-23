@@ -3,12 +3,14 @@ package services
 import (
 	"context"
 	"crypto/rand"
+	"crypto/subtle"
 	"encoding/hex"
 	"fmt"
 	"sync"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"golang.org/x/crypto/bcrypt"
 
 	"songloft/internal/database"
 	"songloft/internal/models"
@@ -33,10 +35,10 @@ type TokenCacheEntry struct {
 
 // AuthService 认证服务
 type AuthService struct {
-	tokens   TokenRepository
-	secret   []byte
-	username string
-	password string
+	tokens       TokenRepository
+	secret       []byte
+	username     string
+	passwordHash []byte
 	// Token 内存缓存，key 为 token 字符串，value 为缓存条目
 	tokenCache sync.Map // map[string]*TokenCacheEntry
 	done       chan struct{}
@@ -71,12 +73,18 @@ func NewAuthService(configs ConfigRepository, tokens TokenRepository, username, 
 		return nil, fmt.Errorf("failed to decode jwt secret: %w", err)
 	}
 
+	// 启动时将管理员密码哈希后常驻内存，避免明文长期留存；登录时用 bcrypt 常量时间比较。
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, fmt.Errorf("failed to hash admin password: %w", err)
+	}
+
 	s := &AuthService{
-		tokens:   tokens,
-		secret:   secret,
-		username: username,
-		password: password,
-		done:     make(chan struct{}),
+		tokens:       tokens,
+		secret:       secret,
+		username:     username,
+		passwordHash: passwordHash,
+		done:         make(chan struct{}),
 	}
 
 	// 启动缓存清理协程
@@ -99,11 +107,6 @@ func (s *AuthService) getAdminUsername(ctx context.Context) (string, error) {
 	return s.username, nil
 }
 
-// getAdminPassword 获取管理员密码
-func (s *AuthService) getAdminPassword(ctx context.Context) (string, error) {
-	return s.password, nil
-}
-
 // Login 用户登录
 func (s *AuthService) Login(ctx context.Context, username, password, clientInfo string) (*models.LoginResponse, error) {
 	// 从数据库获取管理员账户信息
@@ -112,12 +115,10 @@ func (s *AuthService) Login(ctx context.Context, username, password, clientInfo 
 		return nil, fmt.Errorf("failed to get admin username: %w", err)
 	}
 
-	adminPassword, err := s.getAdminPassword(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get admin password: %w", err)
-	}
-
-	if username != adminUsername || password != adminPassword {
+	// 两项都算完再判断，避免因提前返回形成用户名/密码的时序侧信道。
+	usernameMatch := subtle.ConstantTimeCompare([]byte(username), []byte(adminUsername)) == 1
+	passwordMatch := bcrypt.CompareHashAndPassword(s.passwordHash, []byte(password)) == nil
+	if !usernameMatch || !passwordMatch {
 		return nil, fmt.Errorf("invalid credentials")
 	}
 
